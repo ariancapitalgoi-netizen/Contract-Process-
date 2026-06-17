@@ -1,0 +1,6 @@
+{
+  "name": "Bizagi Forms Prototyper",
+  "description": "A step-by-step form builder for Bizagi business processes.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
