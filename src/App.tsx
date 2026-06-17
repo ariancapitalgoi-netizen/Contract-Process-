@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { useState, useEffect, ReactNode } from 'react';
+import { useState, useEffect, ReactNode, createContext, useContext } from 'react';
 import { ChevronDown, ChevronUp, Plus, Paperclip, Calendar, X, GripVertical, BookOpen, MousePointer2, ChevronRight, ChevronLeft } from 'lucide-react';
 import { JalaliDatePicker } from './components/JalaliDatePicker';
 import { Reorder, useDragControls } from "motion/react";
@@ -83,310 +83,15 @@ import { HoldingFinancialManagerReviewForm } from './components/HoldingFinancial
 import { ManagerReviewFormCopy } from './components/ManagerReviewFormCopy';
 import { LegalSummaryForm } from './components/LegalSummaryForm';
 import { SoftwareGuide } from './components/SoftwareGuide';
-
-export function EditableText({ isTestMode, defaultText, className, onChange }: { isTestMode?: boolean, defaultText: string, className?: string, onChange?: (val: string) => void }) {
-  const [text, setText] = useState(() => {
-    const saved = localStorage.getItem(`editable_text_${defaultText}`);
-    return saved !== null ? saved : defaultText;
-  });
-
-  useEffect(() => {
-    const handleStorageChange = () => {
-      const saved = localStorage.getItem(`editable_text_${defaultText}`);
-      setText(saved !== null ? saved : defaultText);
-    };
-
-    const eventHandler = (e: Event) => {
-      if (e instanceof CustomEvent && e.detail.defaultText === defaultText) {
-        setText(e.detail.value);
-      }
-    };
-
-    window.addEventListener('storage', handleStorageChange);
-    window.addEventListener('editable_text_changed', eventHandler);
-
-    handleStorageChange();
-
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-      window.removeEventListener('editable_text_changed', eventHandler);
-    };
-  }, [defaultText]);
-
-  if (!isTestMode) return <span className={className}>{text}</span>;
-  return (
-    <input
-      type="text"
-      value={text}
-      onChange={(e) => {
-        setText(e.target.value);
-        localStorage.setItem(`editable_text_${defaultText}`, e.target.value);
-        window.dispatchEvent(new CustomEvent('editable_text_changed', { 
-          detail: { defaultText, value: e.target.value } 
-        }));
-        if (onChange) onChange(e.target.value);
-      }}
-      className={`bg-blue-50/50 border border-blue-400 rounded px-1 focus:outline-none focus:ring-1 focus:ring-blue-500 max-w-full ${className}`}
-      onClick={(e) => e.stopPropagation()}
-    />
-  );
-}
-
-export interface DevNoteItem {
-  text: string;
-  targetId: string;
-  tabId?: string;
-}
-
-export function BizagiDevNotes({ notes, onAction, isTestMode = false, onNotesChange }: { notes: DevNoteItem[], onAction?: (id: string, tabId?: string) => void, isTestMode?: boolean, onNotesChange?: (newNotes: DevNoteItem[]) => void }) {
-  const [activePicker, setActivePicker] = useState<{ index: number; field: 'targetId' | 'tabId' } | null>(null);
-
-  const scrollToAndHighlight = (id: string, tabId?: string) => {
-    if (isTestMode && !activePicker) return; // Disable scrolling while editing unless picking
-    const el = document.getElementById(id);
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      el.classList.add('ring-4', 'ring-[#b90000]', 'ring-offset-2', 'bg-red-50', 'scale-[1.01]');
-      setTimeout(() => {
-        el.classList.remove('ring-4', 'ring-[#b90000]', 'ring-offset-2', 'bg-red-50', 'scale-[1.01]');
-      }, 2000);
-    } else if (onAction) {
-      onAction(id, tabId);
-    }
-  };
-
-  const handleUpdate = (index: number, field: keyof DevNoteItem, value: string) => {
-    if (!onNotesChange) return;
-    const newNotes = [...notes];
-    newNotes[index] = { ...newNotes[index], [field]: value };
-    onNotesChange(newNotes);
-  };
-
-  const handleAdd = () => {
-    if (!onNotesChange) return;
-    onNotesChange([...notes, { text: 'نکته جدید', targetId: '' }]);
-  };
-
-  const handleRemove = (index: number) => {
-    if (!onNotesChange) return;
-    onNotesChange(notes.filter((_, i) => i !== index));
-  };
-
-  useEffect(() => {
-    if (!activePicker) return;
-
-    const handleGlobalClick = (e: MouseEvent) => {
-      // Find the closest element with an ID
-      let target = e.target as HTMLElement | null;
-      
-      // Don't pick IDs from the notes editor itself
-      if (target?.closest('.bizagi-notes-editor')) return;
-
-      while (target && !target.id && target !== document.body) {
-        target = target.parentElement;
-      }
-
-      if (target && target.id) {
-        e.preventDefault();
-        e.stopPropagation();
-        handleUpdate(activePicker.index, activePicker.field, target.id);
-        setActivePicker(null);
-      }
-    };
-
-    const handleEsc = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setActivePicker(null);
-    };
-
-    // Style injection for highlighting ID elements
-    const styleId = 'bizagi-picker-styles';
-    let styleEl = document.getElementById(styleId);
-    if (!styleEl) {
-      styleEl = document.createElement('style');
-      styleEl.id = styleId;
-      document.head.appendChild(styleEl);
-    }
-    styleEl.textContent = `
-      [id]:not(.bizagi-notes-editor [id]) {
-        outline: 2px dashed #3b82f6 !important;
-        outline-offset: 2px !important;
-        cursor: crosshair !important;
-        position: relative !important;
-      }
-      [id]:not(.bizagi-notes-editor [id]):hover {
-        background-color: rgba(59, 130, 246, 0.1) !important;
-      }
-      [id]:not(.bizagi-notes-editor [id])::after {
-        content: "#" attr(id);
-        position: absolute;
-        top: -18px;
-        left: 0;
-        background: #3b82f6;
-        color: white;
-        font-size: 8px;
-        padding: 1px 4px;
-        border-radius: 2px;
-        white-space: nowrap;
-        pointer-events: none;
-        z-index: 10000;
-        font-family: monospace;
-      }
-    `;
-
-    window.addEventListener('click', handleGlobalClick, true);
-    window.addEventListener('keydown', handleEsc);
-    
-    // Change cursor to indicate picking mode
-    document.body.style.cursor = 'crosshair';
-    
-    return () => {
-      window.removeEventListener('click', handleGlobalClick, true);
-      window.removeEventListener('keydown', handleEsc);
-      const style = document.getElementById(styleId);
-      if (style) style.remove();
-      document.body.style.cursor = 'default';
-    };
-  }, [activePicker, notes, onNotesChange]);
-
-  return (
-    <div className={`mt-8 border border-neutral-300 bg-neutral-50 rounded-sm p-5 shadow-sm transition-all ${activePicker ? 'ring-2 ring-blue-500 ring-offset-2' : ''}`}>
-      {activePicker && (
-        <div className="fixed top-4 left-1/2 -translate-x-1/2 bg-blue-600 text-white px-4 py-2 rounded-full text-xs font-bold shadow-lg z-[9999] animate-bounce">
-          حالت انتخاب شناسه فعال است. روی یک فیلد یا بخش در فرم کلیک کنید (Esc برای لغو)
-        </div>
-      )}
-      <div className="flex items-center gap-2 mb-4 border-b border-gray-300 pb-2">
-        <div className="w-5 h-5 bg-[#b90000] rounded-sm flex items-center justify-center text-white shrink-0 font-mono text-[10px] font-bold">B</div>
-        <EditableText 
-           isTestMode={isTestMode} 
-           defaultText="راهنمای پویای توسعه و رول‌های فرآیند در بیزاجی (Bizagi Technical Notes)" 
-           className="font-bold text-[13px] text-gray-800 flex-1 whitespace-nowrap overflow-hidden text-ellipsis" 
-        />
-        {isTestMode && onNotesChange && (
-          <button 
-            onClick={handleAdd}
-            className="text-[10px] bg-[#b90000] text-white px-2 py-1 rounded-sm font-bold hover:bg-red-700 transition-colors"
-          >
-            <EditableText isTestMode={isTestMode} defaultText="افزودن نکته فنی" />
-          </button>
-        )}
-      </div>
-      {notes.length === 0 ? (
-        <div className="bg-white border border-dashed border-gray-300 rounded p-6 text-center text-xs text-gray-500">
-          توضیحات و قوانین فنی برای این فرم ثبت نشده است.
-        </div>
-      ) : (
-        <>
-          <p className="text-[11px] text-gray-600 mb-4 leading-relaxed">
-            {isTestMode ? "در حالت ویرایش، می‌توانید متن نکات و شناسه‌های مربوطه را تغییر دهید. شناسه‌ها برای قابلیت اسکرول خودکار استفاده می‌شوند." : "توسعه‌دهنده گرامی فرآیند بیزاجی؛ مستندات قواعد پویای این فرم بر اساس آخرین فرآیندهای مورد تایید در لیست زیر قید شده است. با کلیک بر روی هر مستند، به فیلد مربوطه اسکرول و فوکوس خواهد شد:"}
-          </p>
-          <ul className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs leading-relaxed text-gray-700">
-            {notes.map((note, index) => (
-              <li 
-                key={index} 
-                onClick={() => scrollToAndHighlight(note.targetId, note.tabId)}
-                className={`flex items-start gap-2 bg-white border border-gray-200 rounded p-3 transition-all shadow-xs group ${!isTestMode ? 'hover:bg-neutral-100 hover:border-gray-300 cursor-pointer hover:-translate-y-0.5' : ''}`}
-              >
-                <div className="flex flex-col items-center gap-2 shrink-0">
-                  <span className="flex items-center justify-center w-5 h-5 rounded-full bg-neutral-200 group-hover:bg-[#b90000] text-gray-700 group-hover:text-white font-bold font-sans text-[11px] transition-colors">
-                    {index + 1}
-                  </span>
-                  {isTestMode && (
-                    <button 
-                      onClick={(e) => { e.stopPropagation(); handleRemove(index); }}
-                      className="text-red-500 hover:text-red-700 p-1"
-                      title="حذف نکته"
-                    >
-                      <X size={14} />
-                    </button>
-                  )}
-                </div>
-                
-                <div className="flex flex-col gap-1 w-full">
-                  {!isTestMode ? (
-                    <>
-                      <span className="font-semibold text-gray-800 group-hover:text-[#b90000] transition-colors">{note.text}</span>
-                      <span className="text-[10px] text-gray-400 select-none group-hover:text-[#b90000]/70">📌 جهت ارجاع و فوکوس به فیلد، کلیک کنید</span>
-                    </>
-                  ) : (
-                    <div className="flex flex-col gap-2 bizagi-notes-editor" onClick={e => e.stopPropagation()}>
-                      <textarea
-                        className="w-full border border-blue-200 bg-blue-50/30 p-1.5 rounded text-[11px] focus:outline-none focus:ring-1 focus:ring-blue-400 min-h-[60px]"
-                        value={note.text}
-                        onChange={(e) => handleUpdate(index, 'text', e.target.value)}
-                        placeholder="متن نکته فنی..."
-                      />
-                      <div className="grid grid-cols-2 gap-2">
-                        <div className="flex flex-col gap-0.5">
-                          <label className="text-[9px] text-gray-400 font-bold">Target ID:</label>
-                          <div className="flex gap-1">
-                            <input
-                              type="text"
-                              className={`flex-1 border border-blue-200 bg-blue-50/30 px-1 py-0.5 rounded text-[10px] font-mono focus:outline-none ${activePicker?.index === index && activePicker?.field === 'targetId' ? 'ring-2 ring-blue-500' : ''}`}
-                              value={note.targetId}
-                              onChange={(e) => handleUpdate(index, 'targetId', e.target.value)}
-                              placeholder="row-id..."
-                            />
-                            <button
-                              onClick={() => setActivePicker({ index, field: 'targetId' })}
-                              className={`p-1 rounded border transition-colors ${activePicker?.index === index && activePicker?.field === 'targetId' ? 'bg-blue-600 border-blue-600 text-white' : 'bg-gray-100 border-gray-300 text-gray-600 hover:bg-gray-200'}`}
-                              title="انتخاب از روی فرم"
-                            >
-                              <MousePointer2 size={10} />
-                            </button>
-                          </div>
-                        </div>
-                        <div className="flex flex-col gap-0.5">
-                          <label className="text-[9px] text-gray-400 font-bold">Tab ID (Optional):</label>
-                          <div className="flex gap-1">
-                            <input
-                              type="text"
-                              className={`flex-1 border border-blue-200 bg-blue-50/30 px-1 py-0.5 rounded text-[10px] font-mono focus:outline-none ${activePicker?.index === index && activePicker?.field === 'tabId' ? 'ring-2 ring-blue-500' : ''}`}
-                              value={note.tabId || ''}
-                              onChange={(e) => handleUpdate(index, 'tabId', e.target.value)}
-                              placeholder="tab-id..."
-                            />
-                            <button
-                              onClick={() => setActivePicker({ index, field: 'tabId' })}
-                              className={`p-1 rounded border transition-colors ${activePicker?.index === index && activePicker?.field === 'tabId' ? 'bg-blue-600 border-blue-600 text-white' : 'bg-gray-100 border-gray-300 text-gray-600 hover:bg-gray-200'}`}
-                              title="انتخاب از روی فرم"
-                            >
-                              <MousePointer2 size={10} />
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </li>
-            ))}
-          </ul>
-        </>
-      )}
-    </div>
-  );
-}
-
-export function DraggableField({ id, isTestMode, children }: { id: string, isTestMode: boolean, children: ReactNode, key?: any }) {
-  const controls = useDragControls();
-  
-  return (
-    <Reorder.Item value={id} dragListener={false} dragControls={controls} className="relative group">
-      {isTestMode && (
-        <div 
-          className="absolute -right-8 top-0 cursor-grab active:cursor-grabbing p-1 bg-gray-100 border border-gray-200 rounded text-gray-500 hover:text-blue-600 hover:bg-blue-50 shadow-sm z-10"
-          onPointerDown={(e) => controls.start(e)}
-        >
-          <GripVertical size={16} />
-        </div>
-      )}
-      <div className={isTestMode ? "border border-dashed border-blue-300 rounded-sm p-2 bg-blue-50/10" : ""}>
-        {children}
-      </div>
-    </Reorder.Item>
-  );
-}
+import { SupplierReviewForm } from './components/SupplierReviewForm';
+import { 
+  TestModeContext, 
+  useTestMode, 
+  EditableText, 
+  DevNoteItem, 
+  BizagiDevNotes, 
+  DraggableField 
+} from './components/EditableText';
 
 function FormStatus({
   contractType,
@@ -395,7 +100,6 @@ function FormStatus({
   setIsAddendum,
   hasTemplate,
   setHasTemplate,
-  isTestMode = false,
 }: {
   contractType: string;
   setContractType: (v: string) => void;
@@ -405,40 +109,15 @@ function FormStatus({
   setHasTemplate: (v: boolean | null) => void;
   isTestMode?: boolean;
 }) {
+  const { isTestMode } = useTestMode();
   const [order, setOrder] = useState(() => {
     const saved = localStorage.getItem('formStatus_order');
     return saved ? JSON.parse(saved) : ['contractType', 'isAddendum', 'hasTemplate'];
-  });
-  const [labels, setLabels] = useState<Record<string, string>>(() => {
-    const saved = localStorage.getItem('formStatus_labels');
-    return saved ? JSON.parse(saved) : {
-      contractType: 'نوع قرارداد:',
-      isAddendum: 'درخواست، الحاقیه است؟:',
-      hasTemplate: 'آیا قرارداد قالب دار است؟:',
-    };
   });
 
   const handleOrderChange = (newOrder: string[]) => {
     setOrder(newOrder);
     localStorage.setItem('formStatus_order', JSON.stringify(newOrder));
-  };
-
-  const renderLabel = (id: string, defaultLabel: string) => {
-    if (!isTestMode) return labels[id] || defaultLabel;
-    return (
-      <input
-        type="text"
-        value={labels[id] || ''}
-        onChange={(e) => {
-           const newLabels = { ...labels, [id]: e.target.value };
-           setLabels(newLabels);
-           localStorage.setItem('formStatus_labels', JSON.stringify(newLabels));
-        }}
-        className="w-full border border-blue-400 bg-blue-50/50 px-1 py-0.5 rounded text-[12px] font-bold text-gray-800 shadow-inner focus:outline-none focus:ring-1 focus:ring-blue-500 min-w-[120px]"
-        onClick={e => e.stopPropagation()}
-        placeholder={defaultLabel}
-      />
-    );
   };
 
   const isBarterContract = typeof contractType === "string" && contractType.includes("تهاتر");
@@ -447,20 +126,12 @@ function FormStatus({
     {
       text: "قاعده شرطی فیلد الحاقیه و نمایش مشروط قالب: فیلد 'درخواست، الحاقیه است؟' در تمامی قراردادها (حتی تهاتر) نمایش داده می‌شود، اما فیلد 'آیا قرارداد قالب‌دار است؟' در قراردادهای تهاتری مخفی شده و مقدار آن Null می‌گردد.",
       targetId: "status-contract-type"
-    },
-    {
-      text: "فیلدهای اطلاعات تکمیلی تهاتر در طرف قرارداد: اگر نوع قرارداد در فرم اصلی از نوع تهاتر باشد، فیلدهای پویای مدل تهاتر (شامل نوع تهاتر، تا تاریخ، مبلغ و شماره قرارداد مرتبط) به مودال افزودن طرف قرارداد (حقیقی و حقوقی) افزوده می‌شود.",
-      targetId: "status-contract-type"
-    },
-    {
-      text: "الزامی بودن فیلدها: تمامی فیلدهای فرم افزودن اطلاعات اولیه طرف قرارداد الزامی هستند.",
-      targetId: "party-modal-content"
     }
   ];
 
   const fieldComponents: Record<string, ReactNode> = {
     contractType: (
-            <FieldRow id="status-contract-type" label={renderLabel('contractType', 'نوع قرارداد:')} required hasValue={!!contractType} labelWidthClass="grid-cols-[200px_1fr] md:grid-cols-[250px_1fr]">
+            <FieldRow id="status-contract-type" label={<EditableText defaultText="نوع قرارداد:" />} required hasValue={!!contractType} labelWidthClass="grid-cols-[200px_1fr] md:grid-cols-[250px_1fr]">
               <select 
                 className="w-full xl:w-1/2 border border-gray-300 rounded-sm px-2 py-1 outline-none focus:border-red-500 bg-white shadow-inner"
                 value={contractType}
@@ -482,7 +153,7 @@ function FormStatus({
             </FieldRow>
     ),
     isAddendum: (
-                <FieldRow id="status-is-addendum" label={renderLabel('isAddendum', 'درخواست، الحاقیه است؟:')} required hasValue={isAddendum !== null} labelWidthClass="grid-cols-[200px_1fr] md:grid-cols-[250px_1fr]">
+                <FieldRow id="status-is-addendum" label={<EditableText defaultText="درخواست، الحاقیه است؟:" />} required hasValue={isAddendum !== null} labelWidthClass="grid-cols-[200px_1fr] md:grid-cols-[250px_1fr]">
                   <div className="flex items-center gap-6">
                     <label className="flex items-center gap-2 cursor-pointer">
                       <input 
@@ -492,7 +163,7 @@ function FormStatus({
                         onChange={() => setIsAddendum(true)} 
                         className="w-[14px] h-[14px] text-blue-600 focus:ring-blue-500 border-gray-300" 
                       />
-                      <span className="text-gray-700 text-sm"><EditableText isTestMode={isTestMode} defaultText="بله" /></span>
+                      <span className="text-gray-700 text-sm"><EditableText defaultText="بله" /></span>
                     </label>
                     <label className="flex items-center gap-2 cursor-pointer">
                       <input 
@@ -502,13 +173,13 @@ function FormStatus({
                         onChange={() => setIsAddendum(false)} 
                         className="w-[14px] h-[14px] text-blue-600 focus:ring-blue-500 border-gray-300" 
                       />
-                      <span className="text-gray-700 text-sm"><EditableText isTestMode={isTestMode} defaultText="خیر" /></span>
+                      <span className="text-gray-700 text-sm"><EditableText defaultText="خیر" /></span>
                     </label>
                   </div>
                 </FieldRow>
     ),
     hasTemplate: !isBarterContract ? (
-                <FieldRow id="status-has-template" label={renderLabel('hasTemplate', 'آیا قرارداد قالب دار است؟:')} required hasValue={hasTemplate !== null} labelWidthClass="grid-cols-[200px_1fr] md:grid-cols-[250px_1fr]">
+                <FieldRow id="status-has-template" label={<EditableText defaultText="آیا قرارداد قالب دار است؟:" />} required hasValue={hasTemplate !== null} labelWidthClass="grid-cols-[200px_1fr] md:grid-cols-[250px_1fr]">
                   <div className="flex items-center gap-6">
                     <label className="flex items-center gap-2 cursor-pointer">
                       <input 
@@ -518,7 +189,7 @@ function FormStatus({
                         onChange={() => setHasTemplate(true)} 
                         className="w-[14px] h-[14px] text-blue-600 focus:ring-blue-500 border-gray-300" 
                       />
-                      <span className="text-gray-700 text-sm"><EditableText isTestMode={isTestMode} defaultText="بله" /></span>
+                      <span className="text-gray-700 text-sm"><EditableText defaultText="بله" /></span>
                     </label>
                     <label className="flex items-center gap-2 cursor-pointer">
                       <input 
@@ -528,7 +199,7 @@ function FormStatus({
                         onChange={() => setHasTemplate(false)} 
                         className="w-[14px] h-[14px] text-blue-600 focus:ring-blue-500 border-gray-300" 
                       />
-                      <span className="text-gray-700 text-sm"><EditableText isTestMode={isTestMode} defaultText="خیر" /></span>
+                      <span className="text-gray-700 text-sm"><EditableText defaultText="خیر" /></span>
                     </label>
                   </div>
                 </FieldRow>
@@ -607,6 +278,8 @@ function FormRequest({
   setIdentityAttachment,
   parties,
   setParties,
+  tempSigners,
+  setTempSigners,
 }: {
   contractType: string;
   setContractType: (v: string) => void;
@@ -643,6 +316,8 @@ function FormRequest({
   setIdentityAttachment: (v: boolean) => void;
   parties: any[];
   setParties: (v: any[]) => void;
+  tempSigners: any[];
+  setTempSigners: (v: any[]) => void;
 }) {
   const [isAccordionOpen, setIsAccordionOpen] = useState(true);
   const [isPartyInfoOpen, setIsPartyInfoOpen] = useState(true);
@@ -672,13 +347,6 @@ function FormRequest({
 
   // Signer states under organization (صاحبان امضا)
   const [isSignersAccordionOpen, setIsSignersAccordionOpen] = useState(true);
-  const [tempSigners, setTempSigners] = useState<{
-    id: number;
-    fullName: string;
-    position: string;
-    nationalId: string;
-    mobile: string;
-  }[]>([]);
   const [isAddingSigner, setIsAddingSigner] = useState(false);
   const [signerFullName, setSignerFullName] = useState('');
   const [signerPosition, setSignerPosition] = useState('');
@@ -754,10 +422,6 @@ function FormRequest({
     {
       text: "قاعده شرطی فیلد الحاقیه و نمایش مشروط قالب: فیلد 'درخواست، الحاقیه است؟' در تمامی قراردادها (حتی تهاتر) نمایش داده می‌شود، اما فیلد 'آیا قرارداد قالب‌دار است؟' در قراردادهای تهاتری مخفی شده و مقدار آن Null می‌گردد.",
       targetId: "req-contract-type"
-    },
-    {
-      text: "فیلدهای اطلاعات تکمیلی تهاتر در طرف قرارداد: اگر نوع قرارداد از نوع تهاتر باشد، فیلدهای پویای مدل تهاتر (شامل نوع تهاتر، تا تاریخ، مبلغ و شماره قرارداد مرتبط) به مودال افزودن طرف قرارداد (حقیقی و حقوقی) افزوده شده و پس از ثبت، در داشبورد تعاملی طرفین نمایش داده می‌شود.",
-      targetId: "party-info-accordion-barter"
     },
     {
       text: "الزامی بودن فیلدها: تمامی فیلدهای فرم افزودن اطلاعات اولیه طرف قرارداد الزامی هستند.",
@@ -1250,70 +914,7 @@ function FormRequest({
                               />
                             </FieldRow>
 
-                              {/* Barter Fields Placeholder */}
-                              {typeof contractType === "string" && contractType.includes("تهاتر") && (
-                                <div className="space-y-3 animate-fade-in text-right">
-                                  
-                                  <FieldRow 
-                                    label={<EditableText isTestMode={isTestMode} defaultText="نوع تهاتر:" />} 
-                                    labelWidthClass="grid-cols-[140px_1fr] md:grid-cols-[180px_1fr]"
-                                  >
-                                    <select 
-                                      value={tempBarterType}
-                                      required
-                                      onChange={(e) => setTempBarterType(e.target.value)}
-                                      className="w-full md:w-2/3 border border-gray-300 rounded-sm px-2 py-1 outline-none focus:border-red-500 bg-white shadow-inner text-xs"
-                                    >
-                                      <option value="">- لطفاً انتخاب کنید...</option>
-                                      <option value="کمیسیون">کمیسیون</option>
-                                      <option value="قطعه">قطعه</option>
-                                      <option value="خودرو">خودرو</option>
-                                    </select>
-                                  </FieldRow>
-
-                                  <FieldRow 
-                                    label={<EditableText isTestMode={isTestMode} defaultText="تا تاریخ:" />} 
-                                    labelWidthClass="grid-cols-[140px_1fr] md:grid-cols-[180px_1fr]"
-                                  >
-                                    <div className="w-full md:w-2/3">
-                                      <JalaliDatePicker required value={tempBarterUntilDate} onChange={setTempBarterUntilDate} />
-                                    </div>
-                                  </FieldRow>
-
-                                  <FieldRow 
-                                    label={<EditableText isTestMode={isTestMode} defaultText="مبلغ (ریال):" />} 
-                                    labelWidthClass="grid-cols-[140px_1fr] md:grid-cols-[180px_1fr]"
-                                  >
-                                    <div className="w-full md:w-2/3 flex flex-col gap-1">
-                                      <input 
-                                        type="text" 
-                                        required
-                                        value={tempBarterAmount}
-                                        onChange={(e) => setTempBarterAmount(formatNumberWithCommas(e.target.value))}
-                                        className="w-full border border-gray-300 rounded-sm px-2 py-1 outline-none focus:border-red-500 bg-white shadow-inner text-xs font-mono"
-                                        placeholder="مبلغ مورد نظر به ریال"
-                                      />
-                                      {tempBarterAmount && (
-                                        <span className="text-[10px] text-emerald-700 font-bold self-start animate-fade-in block">
-                                          {getTomanHelper(tempBarterAmount)}
-                                        </span>
-                                      )}
-                                    </div>
-                                  </FieldRow>
-
-                                  <FieldRow 
-                                    label={<EditableText isTestMode={isTestMode} defaultText="شماره قرارداد مرتبط:" />} 
-                                    labelWidthClass="grid-cols-[140px_1fr] md:grid-cols-[180px_1fr]"
-                                  >
-                                    <input 
-                                      type="text" 
-                                      value={tempBarterRelatedContract}
-                                      onChange={(e) => setTempBarterRelatedContract(e.target.value)}
-                                      className="w-full md:w-2/3 border border-gray-300 rounded-sm px-2 py-1 outline-none focus:border-red-500 bg-white shadow-inner text-xs font-mono"
-                                    />
-                                  </FieldRow>
-                                </div>
-                              )}
+                             {/* Barter Fields Placeholder */}
 
 
  
@@ -1368,72 +969,7 @@ function FormRequest({
                               />
                             </FieldRow>
 
-                            {isBarterContract && (
-                              <div className="pt-3 mt-3 space-y-3 animate-fade-in text-right">
-                                                       
-                                <FieldRow 
-                                  label={<EditableText isTestMode={isTestMode} defaultText="نوع تهاتر:" />} 
-                                  showAsterisk
-                                  labelWidthClass="grid-cols-[140px_1fr] md:grid-cols-[180px_1fr]"
-                                >
-                                  <select 
-                                    value={tempBarterType}
-                                    required
-                                    onChange={(e) => setTempBarterType(e.target.value)}
-                                    className="w-full md:w-2/3 border border-gray-300 rounded-sm px-2 py-1 outline-none focus:border-red-500 bg-white shadow-inner text-xs"
-                                  >
-                                    <option value="">- لطفاً انتخاب کنید...</option>
-                                    <option value="کمیسیون">کمیسیون</option>
-                                    <option value="قطعه">قطعه</option>
-                                    <option value="خودرو">خودرو</option>
-                                  </select>
-                                </FieldRow>
 
-                                <FieldRow 
-                                  label={<EditableText isTestMode={isTestMode} defaultText="تا تاریخ:" />} 
-                                  showAsterisk
-                                  labelWidthClass="grid-cols-[140px_1fr] md:grid-cols-[180px_1fr]"
-                                >
-                                  <div className="w-full md:w-2/3">
-                                    <JalaliDatePicker required value={tempBarterUntilDate} onChange={setTempBarterUntilDate} />
-                                  </div>
-                                </FieldRow>
-
-                                <FieldRow 
-                                  label={<EditableText isTestMode={isTestMode} defaultText="مبلغ (ریال):" />} 
-                                  showAsterisk
-                                  labelWidthClass="grid-cols-[140px_1fr] md:grid-cols-[180px_1fr]"
-                                >
-                                  <div className="w-full md:w-2/3 flex flex-col gap-1">
-                                    <input 
-                                      type="text" 
-                                      required
-                                      value={tempBarterAmount}
-                                      onChange={(e) => setTempBarterAmount(formatNumberWithCommas(e.target.value))}
-                                      className="w-full border border-gray-300 rounded-sm px-2 py-1 outline-none focus:border-red-500 bg-white shadow-inner text-xs font-mono"
-                                      placeholder="مبلغ مورد نظر به ریال"
-                                    />
-                                    {tempBarterAmount && (
-                                      <span className="text-[10px] text-emerald-700 font-bold self-start animate-fade-in block">
-                                        {getTomanHelper(tempBarterAmount)}
-                                      </span>
-                                    )}
-                                  </div>
-                                </FieldRow>
-
-                                <FieldRow 
-                                  label={<EditableText isTestMode={isTestMode} defaultText="شماره قرارداد مرتبط:" />} 
-                                  labelWidthClass="grid-cols-[140px_1fr] md:grid-cols-[180px_1fr]"
-                                >
-                                  <input 
-                                    type="text" 
-                                    value={tempBarterRelatedContract}
-                                    onChange={(e) => setTempBarterRelatedContract(e.target.value)}
-                                    className="w-full md:w-2/3 border border-gray-300 rounded-sm px-2 py-1 outline-none focus:border-red-500 bg-white shadow-inner text-xs font-mono"
-                                  />
-                                </FieldRow>
-                              </div>
-                            )}
                           </div>
                         )}
 
@@ -1522,67 +1058,7 @@ function FormRequest({
                               />
                             </FieldRow>
 
-                            {isBarterContract && (
-                              <div className="pt-3 mt-3 space-y-3 animate-fade-in text-right">
-                                
-                                <FieldRow 
-                                  label={<EditableText isTestMode={isTestMode} defaultText="نوع تهاتر:" />} 
-                                  labelWidthClass="grid-cols-[140px_1fr] md:grid-cols-[180px_1fr]"
-                                >
-                                  <select 
-                                    value={tempBarterType}
-                                    onChange={(e) => setTempBarterType(e.target.value)}
-                                    className="w-full md:w-2/3 border border-gray-300 rounded-sm px-2 py-1 outline-none focus:border-red-500 bg-white shadow-inner text-xs"
-                                  >
-                                    <option value="">- لطفاً انتخاب کنید...</option>
-                                    <option value="کمیسیون">کمیسیون</option>
-                                    <option value="قطعه">قطعه</option>
-                                    <option value="خودرو">خودرو</option>
-                                  </select>
-                                </FieldRow>
 
-                                <FieldRow 
-                                  label={<EditableText isTestMode={isTestMode} defaultText="تا تاریخ:" />} 
-                                  labelWidthClass="grid-cols-[140px_1fr] md:grid-cols-[180px_1fr]"
-                                >
-                                  <div className="w-full md:w-2/3">
-                                    <JalaliDatePicker value={tempBarterUntilDate} onChange={setTempBarterUntilDate} />
-                                  </div>
-                                </FieldRow>
-
-                                <FieldRow 
-                                  label={<EditableText isTestMode={isTestMode} defaultText="مبلغ (ریال):" />} 
-                                  labelWidthClass="grid-cols-[140px_1fr] md:grid-cols-[180px_1fr]"
-                                >
-                                  <div className="w-full md:w-2/3 flex flex-col gap-1">
-                                    <input 
-                                      type="text" 
-                                      value={tempBarterAmount}
-                                      onChange={(e) => setTempBarterAmount(formatNumberWithCommas(e.target.value))}
-                                      className="w-full border border-gray-300 rounded-sm px-2 py-1 outline-none focus:border-red-500 bg-white shadow-inner text-xs font-mono"
-                                      placeholder="مبلغ مورد نظر به ریال"
-                                    />
-                                    {tempBarterAmount && (
-                                      <span className="text-[10px] text-emerald-700 font-bold self-start animate-fade-in block">
-                                        {getTomanHelper(tempBarterAmount)}
-                                      </span>
-                                    )}
-                                  </div>
-                                </FieldRow>
-
-                                <FieldRow 
-                                  label={<EditableText isTestMode={isTestMode} defaultText="شماره قرارداد مرتبط:" />} 
-                                  labelWidthClass="grid-cols-[140px_1fr] md:grid-cols-[180px_1fr]"
-                                >
-                                  <input 
-                                    type="text" 
-                                    value={tempBarterRelatedContract}
-                                    onChange={(e) => setTempBarterRelatedContract(e.target.value)}
-                                    className="w-full md:w-2/3 border border-gray-300 rounded-sm px-2 py-1 outline-none focus:border-red-500 bg-white shadow-inner text-xs font-mono"
-                                  />
-                                </FieldRow>
-                              </div>
-                            )}
 
                             {/* صاحبان امضا Inner Frame */}
                             <div className="mt-4 border border-gray-300 shadow-sm rounded overflow-hidden">
@@ -1889,9 +1365,9 @@ function FormRequest({
 }
 
 export default function App() {
-  const [activeForm, setActiveForm] = useState<'status' | 'request' | 'review' | 'legalReview' | 'financeReview' | 'finManagerReview' | 'holdingFinManagerReview' | 'reviewCopy'>(() => {
+  const [activeForm, setActiveForm] = useState<'status' | 'request' | 'review' | 'legalReview' | 'financeReview' | 'finManagerReview' | 'holdingFinManagerReview' | 'reviewCopy' | 'legalSummary' | 'guide' | 'supplierReview'>(() => {
     const saved = localStorage.getItem('app_activeForm');
-    return (saved as 'status' | 'request' | 'review' | 'legalReview' | 'financeReview' | 'finManagerReview' | 'holdingFinManagerReview' | 'reviewCopy') || 'request';
+    return (saved as 'status' | 'request' | 'review' | 'legalReview' | 'financeReview' | 'finManagerReview' | 'holdingFinManagerReview' | 'reviewCopy' | 'legalSummary' | 'guide' | 'supplierReview') || 'request';
   });
   const [contractType, setContractType] = useState<string>(() => localStorage.getItem('app_contractType') || 'خرید کالا و خدمات');
   const [isAddendum, setIsAddendum] = useState<boolean | null>(() => {
@@ -1915,6 +1391,14 @@ export default function App() {
   const [privateConditionsDesc, setPrivateConditionsDesc] = useState<string>(() => localStorage.getItem('app_privateConditionsDesc') || '');
   const [initialAttachment, setInitialAttachment] = useState<boolean>(() => localStorage.getItem('app_initialAttachment') === 'true');
   const [identityAttachment, setIdentityAttachment] = useState<boolean>(() => localStorage.getItem('app_identityAttachment') === 'true');
+  
+  const [tempSigners, setTempSigners] = useState<{
+    id: number;
+    fullName: string;
+    position: string;
+    nationalId: string;
+    mobile: string;
+  }[]>([]);
   
   const [parties, setParties] = useState<any[]>(() => {
     const saved = localStorage.getItem('app_parties');
@@ -1975,13 +1459,14 @@ export default function App() {
     localStorage.setItem('app_isTestMode', val.toString());
   };
 
-  const handleSetActiveForm = (val: 'status' | 'request' | 'review' | 'legalReview' | 'financeReview' | 'finManagerReview' | 'holdingFinManagerReview' | 'reviewCopy' | 'legalSummary' | 'guide') => {
+  const handleSetActiveForm = (val: 'status' | 'request' | 'review' | 'legalReview' | 'financeReview' | 'finManagerReview' | 'holdingFinManagerReview' | 'reviewCopy' | 'legalSummary' | 'guide' | 'supplierReview') => {
     setActiveForm(val);
     localStorage.setItem('app_activeForm', val);
   };
 
   return (
-    <div className="min-h-screen bg-[#e8e9ea] flex flex-col rtl font-sans" dir="rtl">
+    <TestModeContext.Provider value={{ isTestMode, setIsTestMode: handleSetTestMode }}>
+      <div className="min-h-screen bg-[#e8e9ea] flex flex-col rtl font-sans" dir="rtl">
       {/* Header bar mapping */}
       <div className="w-full bg-[#297c83] text-white py-2 px-4 flex justify-between items-center shadow-md z-30">
         <h1 className="text-sm font-bold">
@@ -1991,13 +1476,14 @@ export default function App() {
       
       <div className="flex flex-1 overflow-hidden relative">
       {/* Sidebar Navigation */}
-      <div className={`${isNavAccordionOpen ? 'w-56' : 'w-16'} bg-[#f8f9fa] border-l border-gray-300 p-4 shadow-sm flex flex-col gap-2 shrink-0 relative z-20 hidden md:flex transition-all duration-300`}>
-        {isNavAccordionOpen && (
-          <>
-            <div className="flex items-center justify-center gap-2 mb-0 px-2 pb-2 border-b border-gray-300">
-              <div className="w-2 h-2 rounded-full bg-[#b90000]"></div>
-              <span className="text-[16px] font-bold text-gray-800 text-center tracking-tight">لیست فرمها</span>
-            </div>
+      <div className={`${isNavAccordionOpen ? 'w-56' : 'w-16'} bg-[#f8f9fa] border-l border-gray-300 shadow-sm shrink-0 relative z-20 hidden md:flex transition-all duration-300`}>
+        <div className="flex-1 flex flex-col gap-2 p-4 pt-10 overflow-y-auto overflow-x-hidden custom-scrollbar pb-24">
+          {isNavAccordionOpen && (
+            <>
+              <div className="flex items-center justify-center gap-2 mb-3 px-2 pb-2 border-b border-gray-300">
+                <div className="w-2 h-2 rounded-full bg-[#b90000]"></div>
+                <span className="text-[16px] font-bold text-gray-800 text-center tracking-tight">لیست فرمها</span>
+              </div>
             <button
               onClick={() => handleSetActiveForm('status')}
               className={`px-4 py-3 text-right rounded text-sm transition-colors ${
@@ -2095,6 +1581,17 @@ export default function App() {
             >
               <EditableText isTestMode={isTestMode} defaultText="جمع بندی قرارداد در حقوقی" />
             </button>
+
+            <button
+              onClick={() => handleSetActiveForm('supplierReview')}
+              className={`px-4 py-3 text-right rounded text-sm transition-colors ${
+                activeForm === 'supplierReview' 
+                  ? 'bg-[#fff1f1] text-[#a80000] border border-[#f4b8b8] shadow-sm font-bold' 
+                  : 'hover:bg-gray-200 text-gray-700 bg-transparent border border-transparent'
+              }`}
+            >
+              <EditableText isTestMode={isTestMode} defaultText="بررسی قرارداد توسط تامین کننده/متقاضی" />
+            </button>
           </>
         )}
         
@@ -2118,15 +1615,16 @@ export default function App() {
             )}
           </div>
         )}
+        </div>
+      </div>
 
-        <button
+      <button
           onClick={() => setIsNavAccordionOpen(!isNavAccordionOpen)}
           className="absolute -left-3 top-24 flex items-center justify-center w-6 h-6 bg-white hover:bg-gray-50 rounded-full border border-gray-300 text-gray-400 hover:text-[#b90000] transition-all shadow-sm z-30 group"
           title={isNavAccordionOpen ? "بستن منو" : "بازکردن منو"}
         >
           {isNavAccordionOpen ? <ChevronRight size={12} className="group-hover:translate-x-0.5 transition-transform" /> : <ChevronLeft size={12} className="group-hover:-translate-x-0.5 transition-transform" />}
         </button>
-      </div>
 
       {/* Main Content Area */}
       <div className="flex-1 h-screen overflow-y-auto relative">
@@ -2137,7 +1635,7 @@ export default function App() {
              <select 
                className="w-full p-2 border border-gray-300 rounded shadow-sm bg-white font-bold text-gray-700"
                value={activeForm}
-               onChange={(e) => handleSetActiveForm(e.target.value as 'status' | 'request' | 'review' | 'legalReview' | 'financeReview' | 'reviewCopy' | 'legalSummary')}
+               onChange={(e) => handleSetActiveForm(e.target.value as 'status' | 'request' | 'review' | 'legalReview' | 'financeReview' | 'finManagerReview' | 'holdingFinManagerReview' | 'reviewCopy' | 'legalSummary' | 'guide' | 'supplierReview')}
              >
                <option value="status">تعیین وضعیت قرارداد</option>
                <option value="request">ثبت درخواست قرارداد</option>
@@ -2147,6 +1645,7 @@ export default function App() {
                <option value="holdingFinManagerReview">بررسی قرارداد توسط مدیر مالی (هلدینگ)</option>
                <option value="reviewCopy">بررسی درخواست توسط ... (کپی)</option>
                <option value="legalSummary">جمع بندی قرارداد در حقوقی</option>
+               <option value="supplierReview">بررسی قرارداد توسط تامین کننده/متقاضی</option>
                {isTestMode && <option value="guide">راهنمای راهبری</option>}
              </select>
           </div>
@@ -2426,6 +1925,46 @@ export default function App() {
               setIdentityAttachment={setIdentityAttachment}
               parties={parties}
               setParties={setParties}
+              tempSigners={tempSigners}
+              setTempSigners={setTempSigners}
+            />
+          ) : activeForm === 'supplierReview' ? (
+            <SupplierReviewForm
+              isTestMode={isTestMode}
+              contractType={contractType}
+              setContractType={setContractType}
+              isAddendum={isAddendum}
+              setIsAddendum={setIsAddendum}
+              hasTemplate={hasTemplate}
+              setHasTemplate={setHasTemplate}
+              company={company}
+              setCompany={setCompany}
+              subject={subject}
+              setSubject={setSubject}
+              representative={representative}
+              setRepresentative={setRepresentative}
+              noStartDate={noStartDate}
+              setNoStartDate={setNoStartDate}
+              noEndDate={noEndDate}
+              setNoEndDate={setNoEndDate}
+              startDate={startDate}
+              setStartDate={setStartDate}
+              endDate={endDate}
+              setEndDate={setEndDate}
+              hasTechnicalReport={hasTechnicalReport}
+              setHasTechnicalReport={setHasTechnicalReport}
+              hasPrivateConditions={hasPrivateConditions}
+              setHasPrivateConditions={setHasPrivateConditions}
+              requestDescription={requestDescription}
+              setRequestDescription={setRequestDescription}
+              privateConditionsDesc={privateConditionsDesc}
+              setPrivateConditionsDesc={setPrivateConditionsDesc}
+              initialAttachment={initialAttachment}
+              setInitialAttachment={setInitialAttachment}
+              identityAttachment={identityAttachment}
+              setIdentityAttachment={setIdentityAttachment}
+              parties={parties}
+              setParties={setParties}
             />
           ) : activeForm === 'guide' ? (
             <SoftwareGuide />
@@ -2466,9 +2005,13 @@ export default function App() {
               setIdentityAttachment={setIdentityAttachment}
               parties={parties}
               setParties={setParties}
+              tempSigners={tempSigners}
+              setTempSigners={setTempSigners}
             />
           )}
         </div>
+      </div>
+      </div>
         
         {/* Fixed Bottom Action Bar */}
         <div className="fixed bottom-0 left-0 right-0 md:right-56 bg-white border-t border-gray-300 py-3 shadow-[0_-4px_10px_-1px_rgba(0,0,0,0.08)] z-20">
@@ -2495,7 +2038,6 @@ export default function App() {
           </div>
         </div>
       </div>
-    </div>
-    </div>
+    </TestModeContext.Provider>
   );
 }

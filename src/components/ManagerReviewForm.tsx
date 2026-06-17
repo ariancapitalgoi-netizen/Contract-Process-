@@ -1,7 +1,7 @@
 import React, { useState, ReactNode } from 'react';
 import { Paperclip, GripVertical, ChevronDown } from 'lucide-react';
 import { FieldRow, FieldRowTop } from './FormComponents';
-import { BizagiDevNotes, DevNoteItem, DraggableField, EditableText } from '../App';
+import { BizagiDevNotes, DevNoteItem, DraggableField, EditableText } from './EditableText';
 import { Reorder, useDragControls } from "motion/react";
 
 export interface ManagerReviewFormProps {

@@ -1,7 +1,7 @@
 import React, { useState, ReactNode } from 'react';
 import { Paperclip, ChevronDown } from 'lucide-react';
 import { FieldRow, FieldRowTop } from './FormComponents';
-import { BizagiDevNotes, DevNoteItem, DraggableField, EditableText } from '../App';
+import { BizagiDevNotes, DevNoteItem, DraggableField, EditableText } from './EditableText';
 import { Reorder } from "motion/react";
 
 export interface LegalReviewFormProps {
@@ -406,7 +406,7 @@ export function LegalReviewForm({
                     </span>{' '}
                     <span className="font-bold text-gray-800"><EditableText isTestMode={isTestMode} defaultText="واحد حقوقی هلدینگ" /></span>
                   </div>
-                  <div className="md:text-left">
+                  <div className="md:text-right text-right">
                     <span className="font-semibold text-gray-500">
                       <EditableText isTestMode={isTestMode} defaultText="زمان ثبت تصمیم:" />
                     </span>{' '}

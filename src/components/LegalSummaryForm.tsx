@@ -1,7 +1,7 @@
 import React, { useState, useEffect, ReactNode } from 'react';
 import { Paperclip, ChevronDown, FileText, FileEdit } from 'lucide-react';
 import { FieldRow, FieldRowTop } from './FormComponents';
-import { BizagiDevNotes, DevNoteItem, DraggableField, EditableText } from '../App';
+import { BizagiDevNotes, DevNoteItem, DraggableField, EditableText } from './EditableText';
 import { Reorder } from "motion/react";
 
 export interface LegalSummaryFormProps {
@@ -40,6 +40,8 @@ export interface LegalSummaryFormProps {
   setIdentityAttachment: (v: boolean) => void;
   parties: any[];
   setParties: (v: any[]) => void;
+  tempSigners: any[];
+  setTempSigners: (v: any[]) => void;
 }
 
 export function LegalSummaryForm({
@@ -77,7 +79,9 @@ export function LegalSummaryForm({
   identityAttachment,
   setIdentityAttachment,
   parties,
-  setParties
+  setParties,
+  tempSigners,
+  setTempSigners
 }: LegalSummaryFormProps) {
   const [activeTab, setActiveTab] = useState<'opinion' | 'finance' | 'contractInfo'>('opinion');
 
@@ -98,6 +102,8 @@ export function LegalSummaryForm({
   const parsFinanceAttachment = localStorage.getItem('finance_attachment') === 'true';
   const holdingFinanceAttachment = localStorage.getItem('holdingFinManager_attachment') === 'true';
 
+  const [newSigner, setNewSigner] = useState({ fullName: '', position: '', nationalId: '', mobile: '' });
+  
   // New Attachments state for Contract Info tab
   const [contractAttachments, setContractAttachments] = useState<{name: string, date: string}[]>(() => {
     const saved = localStorage.getItem('legalSummary_contractAttachments');
@@ -146,17 +152,12 @@ export function LegalSummaryForm({
   };
 
   const [notes, setNotes] = useState<DevNoteItem[]>(() => {
-    const saved = localStorage.getItem('legal_summary_notes_v9');
+    const saved = localStorage.getItem('legal_summary_notes_v11');
     if (saved) return JSON.parse(saved);
     return [
       {
         text: "نمایش ضمائم نهایی تیم‌های مالی در تهاتر: بر اساس تیم مالی انتخاب شده در مرحله قبل (پارس/هلدینگ/هر دو)، ضمائم تایید شده توسط آن‌ها در این بخش نمایش داده می‌شود.",
         targetId: "legal-summary-barter-attachments-display",
-        tabId: "opinion"
-      },
-      {
-        text: "چک‌لیست تایید نهایی: در صورت انتخاب تصمیم 'تایید'، نمایش چک‌لیست اطمینان از درج شماره فرایند در فوتر قرارداد الزامی و اجباری می‌باشد (Required).",
-        targetId: "legal-summary-process-number-check",
         tabId: "opinion"
       },
       {
@@ -167,6 +168,11 @@ export function LegalSummaryForm({
       {
         text: "انتخاب تیم مالی در تهاتر: در صورت انتخاب نوع قرارداد تهاتر و تصمیم اتخاذ شده 'نیاز به اصلاح واحد مالی'، فیلد 'درخواست مربوط به کدام تیم مالی است' نمایش داده شده و الزامی می‌باشد.",
         targetId: "legal-summary-financial-team-field",
+        tabId: "opinion"
+      },
+      {
+        text: "نمایش مشروط زمان‌بندی در تهاتر: در صورتی که نوع قرارداد تهاتر باشد، چهار فیلد مربوط به زمان‌بندی قرارداد (زمان شروع نامشخص، زمان پایان نامشخص، برنامه زمانبندی شروع و برنامه زمانبندی پایان) در تب اعلام نظر حقوقی نمایش داده می‌شوند.",
+        targetId: "opinion-start-date-row",
         tabId: "opinion"
       },
       {
@@ -198,7 +204,7 @@ export function LegalSummaryForm({
   });
 
   useEffect(() => {
-    localStorage.setItem('legal_summary_notes_v9', JSON.stringify(notes));
+    localStorage.setItem('legal_summary_notes_v11', JSON.stringify(notes));
   }, [notes]);
 
   const addAttachment = () => {
@@ -349,17 +355,84 @@ export function LegalSummaryForm({
                     </div>
                   </div>
 
-                  {decision === 'تایید' && (
-                    <div id="legal-summary-process-number-check" className={`mt-4 p-3 bg-red-50 border border-red-200 rounded-sm flex items-start gap-2.5 animate-fade-in ${!footerCheck ? 'border-r-[3px] border-red-600 pr-2' : ''}`}>
-                      <div 
-                        className={`mt-0.5 w-4 h-4 shrink-0 rounded border flex items-center justify-center transition-all cursor-pointer ${footerCheck ? 'bg-red-600 border-red-600' : 'bg-white border-red-300'}`}
-                        onClick={() => setFooterCheck(!footerCheck)}
-                      >
-                        {footerCheck && <div className="w-2 h-2 bg-white rounded-full shadow-sm" />}
+
+
+                  {/* Contract Scheduling Fields Copied */}
+                  {isBarterContract && (
+                    <div className="mt-6 border border-gray-200 rounded-sm overflow-hidden bg-gray-50/50 p-4">
+                      <h4 className="text-[#005f77] font-bold text-[12px] mb-4">
+                        <EditableText isTestMode={isTestMode} defaultText="زمان‌بندی قرارداد" />
+                      </h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-[12px]">
+                        <div className="flex flex-col gap-2 bg-white p-3 rounded border border-gray-150 shadow-sm text-right lg:p-4" dir="rtl">
+                          <div className="flex items-center gap-2 py-1 select-none">
+                            <input 
+                              type="checkbox" 
+                              id="no-start-date-checkbox"
+                              checked={noStartDate} 
+                              onChange={(e) => setNoStartDate(e.target.checked)} 
+                              className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 cursor-pointer" 
+                            />
+                            <label htmlFor="no-start-date-checkbox" className="font-bold text-gray-700 cursor-pointer">
+                              <EditableText isTestMode={isTestMode} defaultText="زمان شروع نامشخص" />
+                            </label>
+                          </div>
+                          {!noStartDate && (
+                            <div className="mt-1 animate-in slide-in-from-top-1 duration-200">
+                              <FieldRow
+                                id="opinion-start-date-row"
+                                label={<EditableText isTestMode={isTestMode} defaultText="برنامه زمانبندی شروع:" />}
+                                required={true}
+                                hasValue={!!startDate}
+                                labelWidthClass="grid-cols-[130px_1fr]"
+                                noMargin={true}
+                              >
+                                <input 
+                                  type="date" 
+                                  required
+                                  className={`w-full p-2 border rounded-sm bg-white focus:outline-none focus:ring-1 focus:ring-[#b90000] text-[12px] ${!startDate ? 'border-red-400 bg-red-50/30' : 'border-gray-300'}`}
+                                  value={startDate}
+                                  onChange={(e) => setStartDate(e.target.value)}
+                                />
+                              </FieldRow>
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex flex-col gap-2 bg-white p-3 rounded border border-gray-150 shadow-sm text-right lg:p-4" dir="rtl">
+                          <div className="flex items-center gap-2 py-1 select-none">
+                            <input 
+                              type="checkbox" 
+                              id="no-end-date-checkbox"
+                              checked={noEndDate} 
+                              onChange={(e) => setNoEndDate(e.target.checked)} 
+                              className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 cursor-pointer" 
+                            />
+                            <label htmlFor="no-end-date-checkbox" className="font-bold text-gray-700 cursor-pointer">
+                              <EditableText isTestMode={isTestMode} defaultText="زمان پایان نامشخص" />
+                            </label>
+                          </div>
+                          {!noEndDate && (
+                            <div className="mt-1 animate-in slide-in-from-top-1 duration-200">
+                              <FieldRow
+                                id="opinion-end-date-row"
+                                label={<EditableText isTestMode={isTestMode} defaultText="برنامه زمانبندی پایان:" />}
+                                required={true}
+                                hasValue={!!endDate}
+                                labelWidthClass="grid-cols-[130px_1fr]"
+                                noMargin={true}
+                              >
+                                <input 
+                                  type="date" 
+                                  required
+                                  className={`w-full p-2 border rounded-sm bg-white focus:outline-none focus:ring-1 focus:ring-[#b90000] text-[12px] ${!endDate ? 'border-red-400 bg-red-50/30' : 'border-gray-300'}`}
+                                  value={endDate}
+                                  onChange={(e) => setEndDate(e.target.value)}
+                                />
+                              </FieldRow>
+                            </div>
+                          )}
+                        </div>
                       </div>
-                      <span className="text-[11px] font-bold text-red-900 leading-relaxed cursor-pointer" onClick={() => setFooterCheck(!footerCheck)}>
-                        <EditableText isTestMode={isTestMode} defaultText="من اطمینان دارم شماره فرایند این درخواست در Footer قرارداد نهایی قید شده است" />
-                      </span>
                     </div>
                   )}
 
@@ -388,6 +461,55 @@ export function LegalSummaryForm({
                         <EditableText isTestMode={isTestMode} defaultText="رکوردی یافت نشد" />
                       </div>
                     )}
+                  </div>
+
+                  {/* Signers Table */}
+                  <div className="mt-6 border border-gray-300 rounded-sm overflow-hidden">
+                    <div className="bg-[#cbd5e1] border-b border-gray-300 px-4 py-2 font-bold text-gray-800 text-[12px]">
+                      <EditableText isTestMode={isTestMode} defaultText="صاحبان امضا" />
+                    </div>
+                    <div className="overflow-x-auto bg-white">
+                      <table className="w-full text-right border-collapse text-[11px]">
+                        <thead>
+                          <tr className="bg-gray-100 text-gray-700 border-b border-gray-300">
+                            <th className="p-2 border-l border-gray-300 w-full"><EditableText isTestMode={isTestMode} defaultText="نام و نام خانوادگی" /></th>
+                            <th className="p-2 w-12"></th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr className="bg-blue-50/30">
+                            <td className="p-2 border-l border-gray-200">
+                              <input 
+                                type="text" 
+                                className="w-full p-1 border border-gray-300 rounded-sm focus:outline-none focus:ring-1 focus:ring-[#b90000]"
+                                value={newSigner.fullName}
+                                onChange={(e) => setNewSigner({...newSigner, fullName: e.target.value})}
+                                placeholder="نام و نام خانوادگی..."
+                              />
+                            </td>
+                            <td className="p-2 text-center">
+                              <button 
+                                onClick={() => {
+                                  if (newSigner.fullName) {
+                                    setTempSigners([...(tempSigners || []), { ...newSigner, id: Date.now() }]);
+                                    setNewSigner({ fullName: '', position: '', nationalId: '', mobile: '' });
+                                  }
+                                }}
+                                className="bg-[#002855] text-white w-6 h-6 rounded-full flex items-center justify-center hover:bg-blue-900 transition-shadow shadow-sm mx-auto"
+                              >
+                                +
+                              </button>
+                            </td>
+                          </tr>
+                          {(tempSigners || []).map((signer, idx) => (
+                            <tr key={idx} className="hover:bg-gray-50 border-b border-gray-200 animate-in slide-in-from-right-2 duration-300">
+                              <td className="p-2 border-l border-gray-200 font-medium">{signer.fullName}</td>
+                              <td className="p-2 text-center text-red-600 cursor-pointer hover:bg-red-50 font-bold text-lg" onClick={() => setTempSigners(tempSigners.filter((_, i) => i !== idx))}>×</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
                   </div>
 
                   {/* Upload Buttons */}
@@ -748,8 +870,9 @@ export function LegalSummaryForm({
                       </table>
                    </div>
                 </div>
-              </div>
-            )}
+
+               </div>
+             )}
           </div>
 
           {/* Left Sidebar - Key Requirements */}

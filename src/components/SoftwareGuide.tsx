@@ -46,6 +46,15 @@ const GUIDE_SECTIONS = [
       "نمایش بنر هشدار جهت استفاده از اسناد بارگذاری شده در چاپ نهایی قراردادهای تهاتری.",
       "امکان آپلود نسخه‌های نهایی PDF و Word قرارداد در انتهای فرم."
     ]
+  },
+  {
+    title: "راهنمای توسعه‌دهنده (AGENTS.md)",
+    items: [
+      "فیلدهای فرم 'اطلاعات اولیه طرف قرارداد' (افزودن اطلاعات اولیه طرف قرارداد) همگی اجباری هستند.",
+      "تمام فیلدهای ورودی باید قبل از ثبت، برای اطمینان از صحت و وجود مقدار بررسی (Validate) شوند.",
+      "فیلدهای اجباری باید از طریق متدولوژی فنی بیزاجی با خط قرمز پهن در حاشیه سمت راست فیلد (یا تنظیم required به true روی FieldRow) مشخص شوند.",
+      "به عنوان پیش‌فرض، هرگونه تغییر درخواستی (بصری یا عملکردی) با توجه به فرمی که هم‌اکنون در پیش‌نمایش در حال اجراست تفسیر و پیاده‌سازی می‌گردد."
+    ]
   }
 ];
 
@@ -96,6 +105,41 @@ export function SoftwareGuide() {
           <p className="text-[12px] text-amber-700 leading-relaxed">
             این مستندات مستقیماً از روی رول‌های پیاده‌سازی شده در کد اصلی استخراج شده است. هرگونه تغییر در عملکرد فرم‌ها باید در این بخش نیز به‌روزرسانی شود تا یکپارچگی راهنما حفظ گردد.
           </p>
+        </div>
+      </div>
+
+      {/* Dedicated Developer Guide Panel */}
+      <div id="developer-guide-panel" className="bg-gradient-to-l from-red-50/70 to-white border border-red-200 rounded-sm p-6 shadow-xs flex flex-col gap-4">
+        <div className="flex items-center gap-2 pb-2 border-b border-red-100">
+          <div className="w-6 h-6 bg-[#b90000] rounded-full flex items-center justify-center text-white text-xs font-bold font-mono">D</div>
+          <h3 className="font-bold text-[14px] text-gray-800">راهنمای ارشد توسعه‌دهنده (AGENTS.md & Developer Guide)</h3>
+          <span className="bg-red-100 text-[#b90000] px-2 py-0.5 rounded text-[10px] font-bold font-mono">STANDARDS</span>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+          <div className="flex flex-col gap-2">
+            <h4 className="font-bold text-[12px] text-gray-800 flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#b90000]"></span>
+              فیلدهای الزامی و اعتبارسنجی (Mandatory Fields)
+            </h4>
+            <ul className="list-disc pr-5 text-[11px] text-gray-600 leading-relaxed flex flex-col gap-1">
+              <li>تمامی مشخصات و فیلدهای فرم <strong>اطلاعات اولیه طرف قرارداد</strong> کاملاً اجباری (Mandatory) می‌باشند.</li>
+              <li>انجام اعتبارسنجی دقیق روی تمامی این متغیرها قبل از ارسال فرم‌ها الزامی است.</li>
+              <li>طبق سند فنی بیزاجی، مشخص‌سازی این فیلدها با تعبیه خط قرمز پهن در کناره‌ عمودی فیلدها صورت می‌پذیرد.</li>
+            </ul>
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <h4 className="font-bold text-[12px] text-gray-800 flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#b90000]"></span>
+              سیاق پرامپت‌ها و ساختار فرم فعال (Context Rules)
+            </h4>
+            <ul className="list-disc pr-5 text-[11px] text-gray-600 leading-relaxed flex flex-col gap-1">
+              <li>مفروضات تغییرات همگی به صورت پیش‌فرض ناظر بر فرم فعال جاری در بستر iframe لایو ران خواهند بود.</li>
+              <li>تناسب کامل استایل بدنه با نگاشت هویت بصری سازمان (گروه آرین پارس موتور) همواره رعایت می‌شود.</li>
+              <li>رنگ‌بندی پایه‌ای سازمانی بر مبنای زرشکی تیره صریح <code className="bg-gray-100 px-1 rounded text-red-700 font-mono text-[10px]">#b90000</code> بنا نهاده شده است.</li>
+            </ul>
+          </div>
         </div>
       </div>
     </div>

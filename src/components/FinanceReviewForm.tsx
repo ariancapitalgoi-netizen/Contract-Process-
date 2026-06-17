@@ -1,7 +1,7 @@
 import React, { useState, ReactNode } from 'react';
 import { Paperclip, ChevronDown, ChevronUp } from 'lucide-react';
 import { FieldRow, FieldRowTop } from './FormComponents';
-import { BizagiDevNotes, DevNoteItem, DraggableField, EditableText } from '../App';
+import { BizagiDevNotes, DevNoteItem, DraggableField, EditableText } from './EditableText';
 import { Reorder } from "motion/react";
 
 export interface FinanceReviewFormProps {
@@ -100,6 +100,17 @@ export function FinanceReviewForm({
   const [stakeholderName, setStakeholderName] = useState(() => localStorage.getItem('finance_stakeholderName') || '');
   const [estimation, setEstimation] = useState(() => localStorage.getItem('finance_estimation') || '');
 
+  const [labels, setLabels] = useState<Record<string, string>>(() => {
+    const saved = localStorage.getItem('financeForm_labels');
+    return saved ? JSON.parse(saved) : {
+      isOtherExpert: 'ارجاع به کارشناس دیگر:',
+      decision: 'تصمیم اتخاذ شده:',
+      estimation: 'برآورد مالی طرح:',
+      attachment: 'ضمائم:',
+      generalComment: 'توضیحات:'
+    };
+  });
+
   const [isRequirementsOpen, setIsRequirementsOpen] = useState(true);
 
   const [order, setOrder] = useState(() => {
@@ -107,18 +118,7 @@ export function FinanceReviewForm({
     return saved ? JSON.parse(saved) : ['isOtherExpert', 'decision', 'estimation', 'attachment', 'generalComment'];
   });
 
-  const [labels, setLabels] = useState<Record<string, string>>(() => {
-    const saved = localStorage.getItem('financeForm_labels');
-    return saved ? JSON.parse(saved) : {
-      isOtherExpert: 'درخواست مربوط به کارشناس مالی دیگری است؟:',
-      decision: 'تصمیم اتخاذ شده:',
-      estimation: 'برآورد مالی (ریال):',
-      attachment: 'ضمائم:',
-      generalComment: 'توضیحات:'
-    };
-  });
-
-  // Save states to local storage
+  // Load Legal values for reference in legal tab (read-only)
   React.useEffect(() => {
     localStorage.setItem('finance_isOtherExpert', isOtherExpert);
     localStorage.setItem('finance_greenComment', greenComment);
@@ -231,7 +231,7 @@ export function FinanceReviewForm({
     isOtherExpert: (
       <FieldRow
         id="finance-isOtherExpert-row"
-        label={renderLabel('isOtherExpert', 'درخواست مربوط به کارشناس مالی دیگری است؟:')}
+        label={<EditableText defaultText="درخواست مربوط به کارشناس مالی دیگری است؟:" />}
         labelWidthClass="grid-cols-[280px_1fr] md:grid-cols-[340px_1fr]"
       >
         <div className="flex items-center gap-6 py-1">
@@ -254,7 +254,7 @@ export function FinanceReviewForm({
     decision: (
       <FieldRow
         id="finance-decision-row"
-        label={renderLabel('decision', 'تصمیم اتخاذ شده:')}
+        label={<EditableText defaultText="تصمیم اتخاذ شده:" />}
         required
         hasValue={!!decision}
         labelWidthClass="grid-cols-[160px_1fr] md:grid-cols-[200px_1fr]"
@@ -306,7 +306,7 @@ export function FinanceReviewForm({
       !isBarterContract ? (
         <FieldRow
           id="finance-estimation-row"
-          label={renderLabel('estimation', 'برآورد مالی (ریال):')}
+          label={<EditableText defaultText="برآورد مالی (ریال):" />}
           labelWidthClass="grid-cols-[160px_1fr] md:grid-cols-[200px_1fr]"
         >
           <div className="flex items-center gap-2">
@@ -337,7 +337,7 @@ export function FinanceReviewForm({
         )}
         <FieldRow
           id="finance-attachment-row"
-          label={(isBarterContract && decision === 'تایید') ? 'ضمائم نهایی آرین پارس' : renderLabel('attachment', 'ضمائم:')}
+          label={(isBarterContract && decision === 'تایید') ? <EditableText defaultText="ضمائم نهایی آرین پارس" /> : <EditableText defaultText="ضمائم:" />}
           required={isBarterContract && decision === 'تایید'}
           hasValue={attachment}
           labelWidthClass="grid-cols-[160px_1fr] md:grid-cols-[200px_1fr]"
@@ -357,7 +357,7 @@ export function FinanceReviewForm({
     generalComment: (
       <FieldRowTop
         id="finance-generalcomment-row"
-        label={renderLabel('generalComment', 'توضیحات:')}
+        label={<EditableText defaultText="توضیحات:" />}
         labelWidthClass="grid-cols-[160px_1fr] md:grid-cols-[200px_1fr]"
       >
         <textarea
@@ -468,7 +468,7 @@ export function FinanceReviewForm({
                     </span>{' '}
                     <span className="font-bold text-gray-800">Mehrbod Adili</span>
                   </div>
-                  <div className="md:text-left">
+                  <div className="md:text-right text-right">
                     <span className="font-semibold text-gray-500">
                       <EditableText isTestMode={isTestMode} defaultText="زمان ثبت تصمیم:" />
                     </span>{' '}
@@ -551,7 +551,7 @@ export function FinanceReviewForm({
         {/* Tab 2: Legal Tab (Read-Only reference of previous state) */}
         {activeTab === 'legal' && (
           <div className="p-4 md:p-6 flex flex-col gap-5">
-            
+
             <div className="border-b border-gray-200 pb-3 mb-2">
               <h3 className="text-[#005f77] font-bold text-sm">
                 <EditableText isTestMode={isTestMode} defaultText="نتیجه بررسی اولیه حقوقی در خصوص قرارداد" />
@@ -600,7 +600,7 @@ export function FinanceReviewForm({
                   <span className="font-semibold text-gray-500"><EditableText isTestMode={isTestMode} defaultText="تصمیم‌گیرنده:" /></span>{' '}
                   <span className="font-bold text-gray-800">Mehrbod Adili</span>
                 </div>
-                <div className="md:text-left">
+                <div className="md:text-right text-right">
                   <span className="font-semibold text-gray-500"><EditableText isTestMode={isTestMode} defaultText="زمان ثبت تصمیم:" /></span>{' '}
                   <span className="font-mono text-gray-800">۱۴۰۵/۰۳/۲۶ ۰۲:۴۷ ب.ظ</span>
                 </div>
