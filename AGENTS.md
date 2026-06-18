@@ -7,3 +7,11 @@ All fields in the "Initial Party Contract Information" form (`افزودن اط�
 
 ## Prompt Context
 By default, assume any functional or visual change request refers to the form currently active in the preview environment, unless a different form is explicitly specified in the prompt.
+
+## Execution Mode
+The system is locked to **STRICT MODE** (حالت ۱: اجرای سخت‌گیرانه) per user instruction.
+- Only exact execution of instructions is allowed.
+- No unsolicited creativity or suggestions are permitted.
+- No background or unrequested features.
+- "If not explicitly requested, it does not exist."
+

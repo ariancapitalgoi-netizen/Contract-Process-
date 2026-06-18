@@ -4,7 +4,7 @@
  */
 
 import { useState, useEffect, ReactNode, createContext, useContext } from 'react';
-import { ChevronDown, ChevronUp, Plus, Paperclip, Calendar, X, GripVertical, BookOpen, MousePointer2, ChevronRight, ChevronLeft } from 'lucide-react';
+import { ChevronDown, ChevronUp, Plus, Paperclip, Calendar, X, GripVertical, BookOpen, MousePointer2, ChevronRight, ChevronLeft, Trash2 } from 'lucide-react';
 import { JalaliDatePicker } from './components/JalaliDatePicker';
 import { Reorder, useDragControls } from "motion/react";
 
@@ -84,6 +84,7 @@ import { ManagerReviewFormCopy } from './components/ManagerReviewFormCopy';
 import { LegalSummaryForm } from './components/LegalSummaryForm';
 import { SoftwareGuide } from './components/SoftwareGuide';
 import { SupplierReviewForm } from './components/SupplierReviewForm';
+import { DynamicFormFields } from './components/DynamicFormFields';
 import { 
   TestModeContext, 
   useTestMode, 
@@ -590,7 +591,7 @@ function FormRequest({
                       onChange={(e) => setSubject(e.target.value)}
                     />
                   </FieldRow>
-                  <FieldRow label={<EditableText isTestMode={isTestMode} defaultText="زمان شروع مشخص ندارد:" />}>
+                  <FieldRow id="req-start-date-none" label={<EditableText isTestMode={isTestMode} defaultText="زمان شروع مشخص ندارد:" />}>
                     <input 
                       type="checkbox" 
                       className="w-[13px] h-[13px] rounded-sm cursor-pointer" 
@@ -599,7 +600,7 @@ function FormRequest({
                     />
                   </FieldRow>
                   {!noStartDate && (
-                    <FieldRow label={<EditableText isTestMode={isTestMode} defaultText="برنامه زمانبندی شروع:" />}>
+                    <FieldRow id="req-start-schedule" label={<EditableText isTestMode={isTestMode} defaultText="برنامه زمانبندی شروع:" />}>
                       <JalaliDatePicker value={startDate} onChange={setStartDate} />
                     </FieldRow>
                   )}
@@ -612,7 +613,7 @@ function FormRequest({
                       placeholder="محاسبه خودکار..."
                     />
                   </FieldRow>
-                  <FieldRow label={<EditableText isTestMode={isTestMode} defaultText="گزارش توجیه فنی دارد؟:" />}>
+                  <FieldRow id="req-technical-report" label={<EditableText isTestMode={isTestMode} defaultText="گزارش توجیه فنی دارد؟:" />}>
                     <input 
                       type="checkbox" 
                       className="w-[13px] h-[13px] rounded-sm cursor-pointer" 
@@ -631,7 +632,7 @@ function FormRequest({
                   
                   {/* Attachments Section */}
                   <div className="mt-6 flex flex-col">
-                    <FieldRow label={<EditableText isTestMode={isTestMode} defaultText="ضمائم قرارداد:" />}>
+                    <FieldRow id="req-attachments" label={<EditableText isTestMode={isTestMode} defaultText="ضمائم قرارداد:" />}>
                       <div className="flex flex-col items-end w-full cursor-pointer hover:bg-gray-50 border border-transparent hover:border-gray-200">
                         <div className="flex items-center gap-1 group">
                           <span className="text-gray-800"><EditableText isTestMode={isTestMode} defaultText="فایل مربوطه را بارگذاری نمایید" /></span>
@@ -674,7 +675,7 @@ function FormRequest({
                       onChange={(e) => setRepresentative(e.target.value)}
                     />
                   </FieldRow>
-                  <FieldRow label={<EditableText isTestMode={isTestMode} defaultText="زمان پایان مشخص ندارد:" />}>
+                  <FieldRow id="req-end-date-none" label={<EditableText isTestMode={isTestMode} defaultText="زمان پایان مشخص ندارد:" />}>
                     <input 
                       type="checkbox" 
                       className="w-[13px] h-[13px] rounded-sm cursor-pointer" 
@@ -683,11 +684,11 @@ function FormRequest({
                     />
                   </FieldRow>
                   {!noEndDate && (
-                    <FieldRow label={<EditableText isTestMode={isTestMode} defaultText="برنامه زمانبندی پایان:" />}>
+                    <FieldRow id="req-end-schedule" label={<EditableText isTestMode={isTestMode} defaultText="برنامه زمانبندی پایان:" />}>
                       <JalaliDatePicker value={endDate} onChange={setEndDate} />
                     </FieldRow>
                   )}
-                  <FieldRow label={<EditableText isTestMode={isTestMode} defaultText="مدت قرارداد به روز:" />}>
+                  <FieldRow id="req-duration-days" label={<EditableText isTestMode={isTestMode} defaultText="مدت قرارداد به روز:" />}>
                     <input 
                       type="text" 
                       readOnly 
@@ -696,7 +697,7 @@ function FormRequest({
                       placeholder="محاسبه خودکار..."
                     />
                   </FieldRow>
-                  <FieldRow label={<EditableText isTestMode={isTestMode} defaultText="شرایط خصوصی دارد؟:" />}>
+                  <FieldRow id="req-special-conditions" label={<EditableText isTestMode={isTestMode} defaultText="شرایط خصوصی دارد؟:" />}>
                     <input 
                       type="checkbox" 
                       className="w-[13px] h-[13px] rounded-sm cursor-pointer" 
@@ -1287,7 +1288,7 @@ function FormRequest({
 
               {/* Bottom Actions Form */}
               <div className="mt-8">
-                <FieldRow label={<EditableText isTestMode={isTestMode} defaultText="آیا نیاز به بررسی مشاور می‌باشد؟:" />} labelWidthClass="grid-cols-[160px_1fr] md:grid-cols-[180px_1fr]">
+                <FieldRow id="req-consultant-review" label={<EditableText isTestMode={isTestMode} defaultText="آیا نیاز به بررسی مشاور می‌باشد؟:" />} labelWidthClass="grid-cols-[160px_1fr] md:grid-cols-[180px_1fr]">
                   <div className="flex items-center gap-6">
                     <label className="flex items-center gap-2 cursor-pointer">
                       <input type="radio" name="needs_consultant" className="w-[14px] h-[14px]" />
@@ -1365,9 +1366,9 @@ function FormRequest({
 }
 
 export default function App() {
-  const [activeForm, setActiveForm] = useState<'status' | 'request' | 'review' | 'legalReview' | 'financeReview' | 'finManagerReview' | 'holdingFinManagerReview' | 'reviewCopy' | 'legalSummary' | 'guide' | 'supplierReview'>(() => {
+  const [activeForm, setActiveForm] = useState<string>(() => {
     const saved = localStorage.getItem('app_activeForm');
-    return (saved as 'status' | 'request' | 'review' | 'legalReview' | 'financeReview' | 'finManagerReview' | 'holdingFinManagerReview' | 'reviewCopy' | 'legalSummary' | 'guide' | 'supplierReview') || 'request';
+    return saved || 'request';
   });
   const [contractType, setContractType] = useState<string>(() => localStorage.getItem('app_contractType') || 'خرید کالا و خدمات');
   const [isAddendum, setIsAddendum] = useState<boolean | null>(() => {
@@ -1426,7 +1427,37 @@ export default function App() {
     return localStorage.getItem('app_isTestMode') === 'true';
   });
 
+  const [executionMode, setExecutionMode] = useState<'STRICT' | 'CONTROLLED' | 'CREATIVE'>(() => {
+    return (localStorage.getItem('app_executionMode') as any) || 'STRICT';
+  });
+
+  const handleSetExecutionMode = (mode: 'STRICT' | 'CONTROLLED' | 'CREATIVE') => {
+    setExecutionMode(mode);
+    localStorage.setItem('app_executionMode', mode);
+  };
+
   const [isNavAccordionOpen, setIsNavAccordionOpen] = useState(true);
+
+  // custom forms states
+  const [customForms, setCustomForms] = useState<any[]>(() => {
+    const saved = localStorage.getItem('app_custom_forms');
+    if (saved) {
+      try { return JSON.parse(saved); } catch (e) {}
+    }
+    return [];
+  });
+  
+  const [isAddFormOpen, setIsAddFormOpen] = useState(false);
+  const [newFormName, setNewFormName] = useState('');
+  const [newFormBaseKey, setNewFormBaseKey] = useState('request');
+  const [newFormImage, setNewFormImage] = useState<string>('');
+  const [shouldCopy, setShouldCopy] = useState(false);
+  const [modalFields, setModalFields] = useState<any[]>([]);
+  const [deleteConfirmFormId, setDeleteConfirmFormId] = useState<string | null>(null);
+
+  useEffect(() => {
+    localStorage.setItem('app_custom_forms', JSON.stringify(customForms));
+  }, [customForms]);
 
   const partiesStr = JSON.stringify(parties);
 
@@ -1459,151 +1490,368 @@ export default function App() {
     localStorage.setItem('app_isTestMode', val.toString());
   };
 
-  const handleSetActiveForm = (val: 'status' | 'request' | 'review' | 'legalReview' | 'financeReview' | 'finManagerReview' | 'holdingFinManagerReview' | 'reviewCopy' | 'legalSummary' | 'guide' | 'supplierReview') => {
+  const handleSetActiveForm = (val: string) => {
     setActiveForm(val);
     localStorage.setItem('app_activeForm', val);
   };
 
+  const resolvedCustomForm = customForms.find(f => f.id === activeForm);
+  const resolvedBaseKey = resolvedCustomForm ? resolvedCustomForm.baseFormKey : activeForm;
+
+  // File upload reader handler
+  const handleImageUpload = (e: any) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setNewFormImage(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   return (
-    <TestModeContext.Provider value={{ isTestMode, setIsTestMode: handleSetTestMode }}>
+    <TestModeContext.Provider value={{ isTestMode, setIsTestMode: handleSetTestMode, activeForm }}>
       <div className="min-h-screen bg-[#e8e9ea] flex flex-col rtl font-sans" dir="rtl">
       {/* Header bar mapping */}
-      <div className="w-full bg-[#297c83] text-white py-2 px-4 flex justify-between items-center shadow-md z-30">
+      <div className="w-full bg-[#297c83] text-white py-2 px-4 flex flex-col md:flex-row gap-2 justify-between items-center shadow-md z-30">
         <h1 className="text-sm font-bold">
           <EditableText isTestMode={isTestMode} defaultText="درخواست انعقاد قرارداد" />
         </h1>
+
+        {/* Execution Mode Selector in Header, only when isTestMode is active */}
+        {isTestMode && (
+          <div className="flex flex-wrap items-center gap-1 bg-[#1c5459] p-1 rounded-sm text-xs">
+            <span className="text-gray-200 font-medium px-2 select-none text-[11px]">حالت اجرای نرم‌افزار:</span>
+            
+            <button
+              id="mode-strict-btn"
+              onClick={() => handleSetExecutionMode('STRICT')}
+              className={`px-3 py-1 rounded-sm transition-all flex items-center gap-1.5 font-bold cursor-pointer ${
+                executionMode === 'STRICT'
+                  ? 'bg-[#b90000] text-white shadow-sm scale-102 border border-red-400'
+                  : 'text-gray-300 hover:text-white hover:bg-[#22686e]'
+              }`}
+            >
+              <span className={`w-2 h-2 rounded-full ${executionMode === 'STRICT' ? 'bg-white animate-pulse' : 'bg-gray-400'}`} />
+              سخت‌گیرانه (حالت ۱)
+            </button>
+            
+            <button
+              id="mode-controlled-btn"
+              onClick={() => handleSetExecutionMode('CONTROLLED')}
+              className={`px-3 py-1 rounded-sm transition-all flex items-center gap-1.5 font-bold cursor-pointer ${
+                executionMode === 'CONTROLLED'
+                  ? 'bg-[#d97706] text-white shadow-sm scale-102 border border-amber-400'
+                  : 'text-gray-300 hover:text-white hover:bg-[#22686e]'
+              }`}
+            >
+              <span className={`w-2 h-2 rounded-full ${executionMode === 'CONTROLLED' ? 'bg-white' : 'bg-gray-400'}`} />
+              کنترل‌شده (حالت ۲)
+            </button>
+            
+            <button
+              id="mode-creative-btn"
+              onClick={() => handleSetExecutionMode('CREATIVE')}
+              className={`px-3 py-1 rounded-sm transition-all flex items-center gap-1.5 font-bold cursor-pointer ${
+                executionMode === 'CREATIVE'
+                  ? 'bg-[#059669] text-white shadow-sm scale-102 border border-emerald-400'
+                  : 'text-gray-300 hover:text-white hover:bg-[#22686e]'
+              }`}
+            >
+              <span className={`w-2 h-2 rounded-full ${executionMode === 'CREATIVE' ? 'bg-white' : 'bg-gray-400'}`} />
+              خلاقیت آزاد (حالت ۳)
+            </button>
+          </div>
+        )}
       </div>
+
+      {/* Mode Status Info Under-Header Bar */}
+      {isTestMode && (
+        <div id="mode-status-info" className={`w-full px-4 py-1.5 text-[11px] text-right border-b flex justify-between items-center transition-colors shadow-sm select-none ${
+          executionMode === 'STRICT'
+            ? 'bg-red-50 border-red-200 text-red-900'
+            : executionMode === 'CONTROLLED'
+            ? 'bg-amber-50 border-amber-200 text-amber-900'
+            : 'bg-emerald-50 border-emerald-200 text-emerald-900'
+        }`}>
+          <div className="flex items-center gap-2">
+            <span className="font-bold">قانون فعال:</span>
+            <span>
+              {executionMode === 'STRICT' && "«اگر گفته نشده، وجود ندارد». هرگونه خلاقیت یا امکانات ناخواسته‌ای غیرفعال و ممنوع است."}
+              {executionMode === 'CONTROLLED' && "تنها گزینه‌های تاییدشده و توسعه محدود مجاز است. هر نوع نوآوری مستقل به تایید نیاز دارد."}
+              {executionMode === 'CREATIVE' && "ایده‌پردازی و ایجاد گزینه‌های آزمایشی نوآورانه آزاد است."}
+            </span>
+          </div>
+          <div className="font-semibold text-[9px] opacity-75 hidden sm:block">
+            {executionMode === 'STRICT' && "STRICT MODE ACTIVE"}
+            {executionMode === 'CONTROLLED' && "CONTROLLED MODE ACTIVE"}
+            {executionMode === 'CREATIVE' && "CREATIVE MODE ACTIVE"}
+          </div>
+        </div>
+      )}
       
-      <div className="flex flex-1 overflow-hidden relative">
+      <div className="flex flex-row-reverse flex-1 overflow-hidden relative">
       {/* Sidebar Navigation */}
-      <div className={`${isNavAccordionOpen ? 'w-56' : 'w-16'} bg-[#f8f9fa] border-l border-gray-300 shadow-sm shrink-0 relative z-20 hidden md:flex transition-all duration-300`}>
+      <div className={`${isNavAccordionOpen ? 'w-56' : 'w-16'} bg-[#f8f9fa] border-r border-gray-300 shadow-sm shrink-0 relative z-20 hidden md:flex transition-all duration-300`}>
         <div className="flex-1 flex flex-col gap-2 p-4 pt-10 overflow-y-auto overflow-x-hidden custom-scrollbar pb-24">
           {isNavAccordionOpen && (
             <>
-              <div className="flex items-center justify-center gap-2 mb-3 px-2 pb-2 border-b border-gray-300">
-                <div className="w-2 h-2 rounded-full bg-[#b90000]"></div>
-                <span className="text-[16px] font-bold text-gray-800 text-center tracking-tight">لیست فرمها</span>
+              <div className="flex flex-col gap-2 mb-3 pb-2 border-b border-gray-300">
+                <div className="flex items-center justify-center gap-2 px-2">
+                  <div className="w-2 h-2 rounded-full bg-[#b90000]"></div>
+                  <span className="text-[16px] font-bold text-gray-800 text-center tracking-tight">لیست فرمها</span>
+                </div>
+                
+                {/* Mode Selector Right in the List of Forms section */}
+                {false && isTestMode && (
+                  <div className="mt-2 bg-white p-2 rounded border border-gray-200 shadow-xs flex flex-col gap-1 select-none text-right">
+                    <div className="text-[10px] font-bold text-gray-400 mb-1 border-b border-gray-100 pb-0.5">حالت اجرای نرم‌افزار (توسعه):</div>
+                    
+                    <button
+                      id="mode-strict-btn"
+                      onClick={() => handleSetExecutionMode('STRICT')}
+                      className={`w-full px-2 py-1 rounded transition-all flex items-center gap-1.5 text-[10px] font-extrabold cursor-pointer justify-start text-right ${
+                        executionMode === 'STRICT'
+                          ? 'bg-[#b90000] text-white shadow-xs border border-red-400'
+                          : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 bg-transparent'
+                      }`}
+                      title="STRICT MODE"
+                    >
+                      <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${executionMode === 'STRICT' ? 'bg-white animate-pulse' : 'bg-red-600'}`} />
+                      سخت‌گیرانه (حالت ۱)
+                    </button>
+                    
+                    <button
+                      id="mode-controlled-btn"
+                      onClick={() => handleSetExecutionMode('CONTROLLED')}
+                      className={`w-full px-2 py-1 rounded transition-all flex items-center gap-1.5 text-[10px] font-extrabold cursor-pointer justify-start text-right ${
+                        executionMode === 'CONTROLLED'
+                          ? 'bg-[#d97706] text-white shadow-xs border border-amber-400'
+                          : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 bg-transparent'
+                      }`}
+                      title="CONTROLLED MODE"
+                    >
+                      <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${executionMode === 'CONTROLLED' ? 'bg-white' : 'bg-amber-600'}`} />
+                      کنترل‌شده (حالت ۲)
+                    </button>
+                    
+                    <button
+                      id="mode-creative-btn"
+                      onClick={() => handleSetExecutionMode('CREATIVE')}
+                      className={`w-full px-2 py-1 rounded transition-all flex items-center gap-1.5 text-[10px] font-extrabold cursor-pointer justify-start text-right ${
+                        executionMode === 'CREATIVE'
+                          ? 'bg-[#059669] text-white shadow-xs border border-emerald-400'
+                          : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 bg-transparent'
+                      }`}
+                      title="CREATIVE MODE"
+                    >
+                      <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${executionMode === 'CREATIVE' ? 'bg-white' : 'bg-emerald-600'}`} />
+                      خلاقیت آزاد (حالت ۳)
+                    </button>
+
+                    <div className="mt-1.5 text-[9px] text-gray-500 bg-gray-50 p-1.5 rounded leading-relaxed border border-gray-100">
+                      {executionMode === 'STRICT' && "«اگر گفته نشده، وجود ندارد». هرگونه خلاقیت یا امکان ناخواسته غیرفعال است."}
+                      {executionMode === 'CONTROLLED' && "تنها گزینه‌های تاییدشده مجاز است. هر نوع نوآوری به تایید نیاز دارد."}
+                      {executionMode === 'CREATIVE' && "ایده‌پردازی و ایجاد گزینه‌های آزمایشی نوآورانه آزاد است."}
+                    </div>
+                  </div>
+                )}
               </div>
-            <button
+            <div
+              role="button"
+              tabIndex={0}
               onClick={() => handleSetActiveForm('status')}
-              className={`px-4 py-3 text-right rounded text-sm transition-colors ${
+              className={`px-4 py-3 text-right rounded text-sm transition-colors cursor-pointer select-none ${
                 activeForm === 'status' 
                   ? 'bg-[#fff1f1] text-[#a80000] border border-[#f4b8b8] shadow-sm font-bold' 
                   : 'hover:bg-gray-200 text-gray-700 bg-transparent border border-transparent'
               }`}
             >
               <EditableText isTestMode={isTestMode} defaultText="تعیین وضعیت قرارداد" />
-            </button>
+            </div>
             
-            <button
+            <div
+              role="button"
+              tabIndex={0}
               onClick={() => handleSetActiveForm('request')}
-              className={`px-4 py-3 text-right rounded text-sm transition-colors ${
+              className={`px-4 py-3 text-right rounded text-sm transition-colors cursor-pointer select-none ${
                 activeForm === 'request' 
                   ? 'bg-[#fff1f1] text-[#a80000] border border-[#f4b8b8] shadow-sm font-bold' 
                   : 'hover:bg-gray-200 text-gray-700 bg-transparent border border-transparent'
               }`}
             >
               <EditableText isTestMode={isTestMode} defaultText="ثبت درخواست قرارداد" />
-            </button>
+            </div>
             
-            <button
+            <div
+              role="button"
+              tabIndex={0}
               onClick={() => handleSetActiveForm('review')}
-              className={`px-4 py-3 text-right rounded text-sm transition-colors ${
+              className={`px-4 py-3 text-right rounded text-sm transition-colors cursor-pointer select-none ${
                 activeForm === 'review' 
                   ? 'bg-[#fff1f1] text-[#a80000] border border-[#f4b8b8] shadow-sm font-bold' 
                   : 'hover:bg-gray-200 text-gray-700 bg-transparent border border-transparent'
               }`}
             >
               <EditableText isTestMode={isTestMode} defaultText="بررسی درخواست توسط ..." />
-            </button>
+            </div>
 
-            <button
+            <div
+              role="button"
+              tabIndex={0}
               onClick={() => handleSetActiveForm('legalReview')}
-              className={`px-4 py-3 text-right rounded text-sm transition-colors ${
+              className={`px-4 py-3 text-right rounded text-sm transition-colors cursor-pointer select-none ${
                 activeForm === 'legalReview' 
                   ? 'bg-[#fff1f1] text-[#a80000] border border-[#f4b8b8] shadow-sm font-bold' 
                   : 'hover:bg-gray-200 text-gray-700 bg-transparent border border-transparent'
               }`}
             >
               <EditableText isTestMode={isTestMode} defaultText="بررسی قرارداد در حقوقی" />
-            </button>
+            </div>
 
-            <button
+            <div
+              role="button"
+              tabIndex={0}
               onClick={() => handleSetActiveForm('financeReview')}
-              className={`px-4 py-3 text-right rounded text-sm transition-colors ${
+              className={`px-4 py-3 text-right rounded text-sm transition-colors cursor-pointer select-none ${
                 activeForm === 'financeReview' 
                   ? 'bg-[#fff1f1] text-[#a80000] border border-[#f4b8b8] shadow-sm font-bold' 
                   : 'hover:bg-gray-200 text-gray-700 bg-transparent border border-transparent'
               }`}
             >
               <EditableText isTestMode={isTestMode} defaultText="بررسی قرارداد توسط کارشناس مالی" />
-            </button>
+            </div>
 
-            <button
+            <div
+              role="button"
+              tabIndex={0}
               onClick={() => handleSetActiveForm('reviewCopy')}
-              className={`px-4 py-3 text-right rounded text-sm transition-colors ${
+              className={`px-4 py-3 text-right rounded text-sm transition-colors cursor-pointer select-none ${
                 activeForm === 'reviewCopy' 
                   ? 'bg-[#fff1f1] text-[#a80000] border border-[#f4b8b8] shadow-sm font-bold' 
                   : 'hover:bg-gray-200 text-gray-700 bg-transparent border border-transparent'
               }`}
             >
               <EditableText isTestMode={isTestMode} defaultText="بررسی درخواست توسط ... (کپی)" />
-            </button>
-            <button
+            </div>
+            <div
+              role="button"
+              tabIndex={0}
               onClick={() => handleSetActiveForm('finManagerReview')}
-              className={`px-4 py-3 text-right rounded text-sm transition-colors ${
+              className={`px-4 py-3 text-right rounded text-sm transition-colors cursor-pointer select-none ${
                 activeForm === 'finManagerReview' 
                   ? 'bg-[#fff1f1] text-[#a80000] border border-[#f4b8b8] shadow-sm font-bold' 
                   : 'hover:bg-gray-200 text-gray-700 bg-transparent border border-transparent'
               }`}
             >
               <EditableText isTestMode={isTestMode} defaultText="بررسی قرارداد توسط مدیر مالی" />
-            </button>
+            </div>
 
-            <button
+            <div
+              role="button"
+              tabIndex={0}
               onClick={() => handleSetActiveForm('holdingFinManagerReview')}
-              className={`px-4 py-3 text-right rounded text-sm transition-colors ${
+              className={`px-4 py-3 text-right rounded text-sm transition-colors cursor-pointer select-none ${
                 activeForm === 'holdingFinManagerReview' 
                   ? 'bg-[#fff1f1] text-[#a80000] border border-[#f4b8b8] shadow-sm font-bold' 
                   : 'hover:bg-gray-200 text-gray-700 bg-transparent border border-transparent'
               }`}
             >
               <EditableText isTestMode={isTestMode} defaultText="بررسی قرارداد توسط مدیر مالی (هلدینگ)" />
-            </button>
+            </div>
 
-            <button
+            <div
+              role="button"
+              tabIndex={0}
               onClick={() => handleSetActiveForm('legalSummary')}
-              className={`px-4 py-3 text-right rounded text-sm transition-colors ${
+              className={`px-4 py-3 text-right rounded text-sm transition-colors cursor-pointer select-none ${
                 activeForm === 'legalSummary' 
                   ? 'bg-[#fff1f1] text-[#a80000] border border-[#f4b8b8] shadow-sm font-bold' 
                   : 'hover:bg-gray-200 text-gray-700 bg-transparent border border-transparent'
               }`}
             >
               <EditableText isTestMode={isTestMode} defaultText="جمع بندی قرارداد در حقوقی" />
-            </button>
+            </div>
 
-            <button
+            <div
+              role="button"
+              tabIndex={0}
               onClick={() => handleSetActiveForm('supplierReview')}
-              className={`px-4 py-3 text-right rounded text-sm transition-colors ${
+              className={`px-4 py-3 text-right rounded text-sm transition-colors cursor-pointer select-none ${
                 activeForm === 'supplierReview' 
                   ? 'bg-[#fff1f1] text-[#a80000] border border-[#f4b8b8] shadow-sm font-bold' 
                   : 'hover:bg-gray-200 text-gray-700 bg-transparent border border-transparent'
               }`}
             >
               <EditableText isTestMode={isTestMode} defaultText="بررسی قرارداد توسط تامین کننده/متقاضی" />
-            </button>
+            </div>
+
+            {customForms.map(cf => (
+              <div
+                key={cf.id}
+                className="group/cf relative flex items-center justify-between"
+              >
+                <div
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => handleSetActiveForm(cf.id)}
+                  className={`flex-1 flex items-center gap-2 pl-8 pr-4 py-3 text-right rounded text-sm transition-colors cursor-pointer select-none ${
+                    activeForm === cf.id 
+                      ? 'bg-[#fff1f1] text-[#a80000] border border-[#f4b8b8] shadow-sm font-bold' 
+                      : 'hover:bg-gray-200 text-gray-700 bg-transparent border border-transparent'
+                  }`}
+                >
+                  {cf.image ? (
+                    <img src={cf.image} className="w-5 h-5 rounded object-cover" alt="" referrerPolicy="no-referrer" />
+                  ) : (
+                    <div className="w-5 h-5 rounded bg-red-100 flex items-center justify-center text-[#a80000] text-xs font-bold">
+                      {cf.name.charAt(0)}
+                    </div>
+                  )}
+                  <span className="truncate">{cf.name}</span>
+                </div>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setDeleteConfirmFormId(cf.id);
+                  }}
+                  className="absolute left-2 opacity-60 hover:opacity-100 p-1 text-red-600 hover:text-red-700 rounded bg-white hover:bg-red-50 border border-red-100 hover:border-red-300 shadow-xs transition-opacity cursor-pointer z-10"
+                  title="حذف فرم سفارشی"
+                >
+                  <Trash2 size={12} />
+                </button>
+              </div>
+            ))}
+
+            <div className="px-2 py-2 mt-1">
+              <button
+                onClick={() => {
+                  setIsAddFormOpen(true);
+                  setShouldCopy(false);
+                  setNewFormBaseKey('blank');
+                  setModalFields([]);
+                }}
+                className="w-full flex items-center justify-center gap-1.5 py-2 bg-red-50 hover:bg-red-100 text-[#a80000] border border-dashed border-red-300 hover:border-red-400 rounded text-xs font-extrabold transition-all shadow-xs cursor-pointer"
+              >
+                <Plus size={12} />
+                <span>نمونه‌سازی فرم جدید</span>
+              </button>
+            </div>
           </>
         )}
         
         {isNavAccordionOpen && (
           <div className="mt-auto pt-4 border-t border-gray-300 text-center text-[10px] text-gray-500 font-medium">
-            <p className="font-bold"><EditableText isTestMode={isTestMode} defaultText="طراحی و توسعه مهربد عدیلی" /></p>
-            <p>Contract Conclusion LE-01-3-1</p>
+            <div className="font-bold"><EditableText isTestMode={isTestMode} defaultText="طراحی و توسعه مهربد عدیلی" /></div>
+            <div>Contract Conclusion LE-01-3-1</div>
             
             {isTestMode && (
-              <button
+              <div
+                role="button"
+                tabIndex={0}
                 onClick={() => handleSetActiveForm('guide')}
-                className={`mt-3 w-full px-2 py-1.5 rounded text-[11px] transition-all border flex items-center justify-center gap-2 ${
+                className={`mt-3 w-full px-2 py-1.5 rounded text-[11px] transition-all border flex items-center justify-center gap-2 cursor-pointer select-none ${
                   activeForm === 'guide' 
                     ? 'bg-amber-100 text-amber-900 border-amber-400 font-bold shadow-sm' 
                     : 'bg-amber-50/50 text-amber-700 border-amber-200 hover:bg-amber-100'
@@ -1611,20 +1859,19 @@ export default function App() {
               >
                 <BookOpen size={12} />
                 <span><EditableText isTestMode={isTestMode} defaultText="راهنمای راهبری" /></span>
-              </button>
+              </div>
             )}
           </div>
         )}
+          <button
+              onClick={() => setIsNavAccordionOpen(!isNavAccordionOpen)}
+              className="absolute -right-3 top-24 flex items-center justify-center w-6 h-6 bg-white hover:bg-gray-50 rounded-full border border-gray-300 text-gray-400 hover:text-[#b90000] transition-all shadow-sm z-30 group"
+              title={isNavAccordionOpen ? "بستن منو" : "بازکردن منو"}
+            >
+              <ChevronRight size={12} className={`transition-transform duration-300 ${isNavAccordionOpen ? 'rotate-180' : 'rotate-0'}`} />
+            </button>
         </div>
       </div>
-
-      <button
-          onClick={() => setIsNavAccordionOpen(!isNavAccordionOpen)}
-          className="absolute -left-3 top-24 flex items-center justify-center w-6 h-6 bg-white hover:bg-gray-50 rounded-full border border-gray-300 text-gray-400 hover:text-[#b90000] transition-all shadow-sm z-30 group"
-          title={isNavAccordionOpen ? "بستن منو" : "بازکردن منو"}
-        >
-          {isNavAccordionOpen ? <ChevronRight size={12} className="group-hover:translate-x-0.5 transition-transform" /> : <ChevronLeft size={12} className="group-hover:-translate-x-0.5 transition-transform" />}
-        </button>
 
       {/* Main Content Area */}
       <div className="flex-1 h-screen overflow-y-auto relative">
@@ -1632,25 +1879,115 @@ export default function App() {
           
           {/* Mobile Navigation Dropdown */}
           <div className="md:hidden mb-4">
-             <select 
-               className="w-full p-2 border border-gray-300 rounded shadow-sm bg-white font-bold text-gray-700"
-               value={activeForm}
-               onChange={(e) => handleSetActiveForm(e.target.value as 'status' | 'request' | 'review' | 'legalReview' | 'financeReview' | 'finManagerReview' | 'holdingFinManagerReview' | 'reviewCopy' | 'legalSummary' | 'guide' | 'supplierReview')}
-             >
-               <option value="status">تعیین وضعیت قرارداد</option>
-               <option value="request">ثبت درخواست قرارداد</option>
-               <option value="review">بررسی درخواست توسط ...</option>
-               <option value="legalReview">بررسی قرارداد در حقوقی</option>
-               <option value="financeReview">بررسی قرارداد توسط کارشناس مالی</option>
-               <option value="holdingFinManagerReview">بررسی قرارداد توسط مدیر مالی (هلدینگ)</option>
-               <option value="reviewCopy">بررسی درخواست توسط ... (کپی)</option>
-               <option value="legalSummary">جمع بندی قرارداد در حقوقی</option>
-               <option value="supplierReview">بررسی قرارداد توسط تامین کننده/متقاضی</option>
-               {isTestMode && <option value="guide">راهنمای راهبری</option>}
-             </select>
+              <select 
+                className="w-full p-2 border border-gray-300 rounded shadow-sm bg-white font-bold text-gray-700"
+                value={activeForm}
+                onChange={(e) => handleSetActiveForm(e.target.value)}
+              >
+                <option value="status">تعیین وضعیت قرارداد</option>
+                <option value="request">ثبت درخواست قرارداد</option>
+                <option value="review">بررسی درخواست توسط ...</option>
+                <option value="legalReview">بررسی قرارداد در حقوقی</option>
+                <option value="financeReview">بررسی قرارداد توسط کارشناس مالی</option>
+                <option value="holdingFinManagerReview">بررسی قرارداد توسط مدیر مالی (هلدینگ)</option>
+                <option value="reviewCopy">بررسی درخواست توسط ... (کپی)</option>
+                <option value="legalSummary">جمع بندی قرارداد در حقوقی</option>
+                <option value="supplierReview">بررسی قرارداد توسط تامین کننده/متقاضی</option>
+                {customForms.map(cf => (
+                  <option key={cf.id} value={cf.id}>{cf.name} (سفارشی)</option>
+                ))}
+                {isTestMode && <option value="guide">راهنمای راهبری</option>}
+              </select>
+
+             {/* Mode Selector for Mobile */}
+             {isTestMode && (
+               <div className="hidden mt-2 bg-white p-2 rounded border border-gray-200 shadow-xs flex flex-col gap-1.5 select-none text-right">
+                 <div className="text-[10px] font-bold text-gray-400 border-b border-gray-100 pb-0.5">حالت اجرای نرم‌افزار (توسعه):</div>
+                 <div className="grid grid-cols-3 gap-1">
+                   <button
+                     onClick={() => handleSetExecutionMode('STRICT')}
+                     className={`px-1.5 py-1 rounded transition-all flex items-center justify-center gap-1.5 text-[9px] font-extrabold cursor-pointer border ${
+                       executionMode === 'STRICT'
+                         ? 'bg-[#b90000] text-white border-red-400'
+                         : 'text-gray-600 border-transparent hover:bg-gray-100'
+                     }`}
+                   >
+                     سخت‌گیرانه (۱)
+                   </button>
+                   <button
+                     onClick={() => handleSetExecutionMode('CONTROLLED')}
+                     className={`px-1.5 py-1 rounded transition-all flex items-center justify-center gap-1.5 text-[9px] font-extrabold cursor-pointer border ${
+                       executionMode === 'CONTROLLED'
+                         ? 'bg-[#d97706] text-white border-amber-400'
+                         : 'text-gray-600 border-transparent hover:bg-gray-100'
+                     }`}
+                   >
+                     کنترل‌شده (۲)
+                   </button>
+                   <button
+                     onClick={() => handleSetExecutionMode('CREATIVE')}
+                     className={`px-1.5 py-1 rounded transition-all flex items-center justify-center gap-1.5 text-[9px] font-extrabold cursor-pointer border ${
+                       executionMode === 'CREATIVE'
+                         ? 'bg-[#059669] text-white border-emerald-400'
+                         : 'text-gray-600 border-transparent hover:bg-gray-100'
+                     }`}
+                   >
+                     خلاقیت آزاد (۳)
+                   </button>
+                 </div>
+               </div>
+             )}
           </div>
 
-          {activeForm === 'status' ? (
+          {resolvedCustomForm && (
+            <div className="mb-6 bg-gradient-to-r from-red-50 to-amber-50 border border-red-200 rounded-lg p-4 shadow-xs flex flex-col md:flex-row items-center gap-4 text-right">
+              {resolvedCustomForm.image ? (
+                <img 
+                  src={resolvedCustomForm.image} 
+                  alt="" 
+                  className="w-14 h-14 rounded-lg object-cover border border-red-200 shadow-xs shrink-0"
+                  referrerPolicy="no-referrer"
+                />
+              ) : (
+                <div className="w-14 h-14 rounded-lg bg-[#a80000] text-white font-extrabold flex items-center justify-center text-xl shadow-xs shrink-0 select-none">
+                  {resolvedCustomForm.name.charAt(0)}
+                </div>
+              )}
+              <div className="flex-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="bg-[#b90000] text-white text-[9px] px-1.5 py-0.5 rounded-xs font-bold font-sans">ایجاد شده در پروژه من</span>
+                  <h2 className="text-base font-black text-gray-800">{resolvedCustomForm.name}</h2>
+                </div>
+                <p className="text-[11px] text-gray-500 mt-1">
+                  این فرم به صورت پویا از روی ساختار انحصاری <span className="font-bold text-[#b90000]">«{
+                    resolvedCustomForm.baseFormKey === 'status' ? 'تعیین وضعیت قرارداد' :
+                    resolvedCustomForm.baseFormKey === 'request' ? 'ثبت درخواست قرارداد' :
+                    resolvedCustomForm.baseFormKey === 'review' ? 'بررسی درخواست توسط ...' :
+                    resolvedCustomForm.baseFormKey === 'legalReview' ? 'بررسی قرارداد در حقوقی' :
+                    resolvedCustomForm.baseFormKey === 'financeReview' ? 'بررسی قرارداد توسط کارشناس مالی' :
+                    resolvedCustomForm.baseFormKey === 'reviewCopy' ? 'بررسی درخواست توسط ... (کپی)' :
+                    resolvedCustomForm.baseFormKey === 'finManagerReview' ? 'بررسی قرارداد توسط مدیر مالی' :
+                    resolvedCustomForm.baseFormKey === 'holdingFinManagerReview' ? 'بررسی قرارداد توسط مدیر مالی (هلدینگ)' :
+                    resolvedCustomForm.baseFormKey === 'legalSummary' ? 'جمع بندی قرارداد در حقوقی' :
+                    resolvedCustomForm.baseFormKey === 'supplierReview' ? 'بررسی قرارداد توسط تامین کننده/متقاضی' : 'فرم مبدا'
+                  }»</span> کپی‌برداری و نمونه‌سازی شده است.
+                </p>
+              </div>
+
+              <button
+                onClick={() => {
+                  setDeleteConfirmFormId(resolvedCustomForm.id);
+                }}
+                className="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 shrink-0 shadow-sm cursor-pointer border border-red-500 mr-auto self-start md:self-center"
+                title="حذف کامل این فرم اختصاصی"
+              >
+                <Trash2 size={13} />
+                <span>حذف کامل فرم</span>
+              </button>
+            </div>
+          )}
+
+          {resolvedBaseKey === 'status' ? (
             <FormStatus 
               contractType={contractType}
               setContractType={setContractType}
@@ -1660,7 +1997,7 @@ export default function App() {
               setHasTemplate={setHasTemplate}
               isTestMode={isTestMode}
             />
-          ) : activeForm === 'review' ? (
+          ) : resolvedBaseKey === 'review' ? (
             <ManagerReviewForm 
               isTestMode={isTestMode} 
               contractType={contractType}
@@ -1698,7 +2035,7 @@ export default function App() {
               parties={parties}
               setParties={setParties}
             />
-          ) : activeForm === 'legalReview' ? (
+          ) : resolvedBaseKey === 'legalReview' ? (
             <LegalReviewForm 
               isTestMode={isTestMode} 
               contractType={contractType}
@@ -1736,7 +2073,7 @@ export default function App() {
               parties={parties}
               setParties={setParties}
             />
-          ) : activeForm === 'finManagerReview' ? (
+          ) : resolvedBaseKey === 'finManagerReview' ? (
             <FinancialManagerReviewForm
               isTestMode={isTestMode}
               contractType={contractType}
@@ -1774,7 +2111,7 @@ export default function App() {
               parties={parties}
               setParties={setParties}
             />
-          ) : activeForm === 'holdingFinManagerReview' ? (
+          ) : resolvedBaseKey === 'holdingFinManagerReview' ? (
             <HoldingFinancialManagerReviewForm
               isTestMode={isTestMode}
               contractType={contractType}
@@ -1812,7 +2149,7 @@ export default function App() {
               parties={parties}
               setParties={setParties}
             />
-          ) : activeForm === 'financeReview' ? (
+          ) : resolvedBaseKey === 'financeReview' ? (
             <FinanceReviewForm 
               isTestMode={isTestMode} 
               contractType={contractType}
@@ -1850,7 +2187,7 @@ export default function App() {
               parties={parties}
               setParties={setParties}
             />
-          ) : activeForm === 'reviewCopy' ? (
+          ) : resolvedBaseKey === 'reviewCopy' ? (
             <ManagerReviewFormCopy 
               isTestMode={isTestMode} 
               contractType={contractType}
@@ -1888,7 +2225,7 @@ export default function App() {
               parties={parties}
               setParties={setParties}
             />
-          ) : activeForm === 'legalSummary' ? (
+          ) : resolvedBaseKey === 'legalSummary' ? (
             <LegalSummaryForm
               isTestMode={isTestMode} 
               contractType={contractType}
@@ -1928,7 +2265,7 @@ export default function App() {
               tempSigners={tempSigners}
               setTempSigners={setTempSigners}
             />
-          ) : activeForm === 'supplierReview' ? (
+          ) : resolvedBaseKey === 'supplierReview' ? (
             <SupplierReviewForm
               isTestMode={isTestMode}
               contractType={contractType}
@@ -1966,8 +2303,22 @@ export default function App() {
               parties={parties}
               setParties={setParties}
             />
-          ) : activeForm === 'guide' ? (
+          ) : resolvedBaseKey === 'guide' ? (
             <SoftwareGuide />
+          ) : resolvedBaseKey === 'blank' ? (
+            <div className="bg-white rounded-xl shadow-md border border-gray-100 p-6 text-right relative">
+              <div className="flex items-center gap-2 pb-4 mb-4 border-b border-gray-100">
+                <span className="w-2.5 h-6 bg-[#297c83] rounded-full"></span>
+                <h3 className="text-base font-black text-gray-800">طراحی اختصاصی فرم جدید</h3>
+              </div>
+              <p className="text-xs text-gray-500 mb-6 leading-relaxed">
+                این فرم به عنوان یک <span className="text-[#a80000] font-bold">فرم تجاری کاملاً جدید و خام</span> ساخته شده است. بدنه و فیلدهای این فرم بر اساس ساختاری است که شما در لحظه ساخت تعیین نموده‌اید یا به صورت پویا در زیر اضافه می‌کنید.
+              </p>
+              <div className="bg-gray-50 rounded-lg p-6 border border-dashed border-gray-200 text-center text-xs text-gray-400">
+                <div className="font-bold text-gray-600 mb-1">ساخت و چیدمان شخصی‌سازی شده</div>
+                تمام فیلدها و اطلاعات ورودی تکمیل‌شده زیر، مستقیماً متعلق به این فرم بوده و در حافظه ذخیره می‌گردند.
+              </div>
+            </div>
           ) : (
             <FormRequest 
               contractType={contractType}
@@ -2009,6 +2360,7 @@ export default function App() {
               setTempSigners={setTempSigners}
             />
           )}
+          {activeForm !== 'guide' && <DynamicFormFields formId={activeForm} />}
         </div>
       </div>
       </div>
@@ -2038,6 +2390,415 @@ export default function App() {
           </div>
         </div>
       </div>
+
+      {isAddFormOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 overflow-y-auto font-sans" dir="rtl">
+          <div className="bg-white rounded-xl shadow-2xl border border-gray-100 max-w-lg w-full overflow-hidden text-right leading-relaxed flex flex-col max-h-[92vh]">
+            {/* Header */}
+            <div className="bg-gradient-to-r from-[#297c83] to-[#1c5459] text-white p-4 flex justify-between items-center sm:flex-row-reverse select-none">
+              <h3 className="text-base font-black">ساخت و نمونه‌سازی فرم تجاری جدید</h3>
+              <button 
+                onClick={() => {
+                  setIsAddFormOpen(false);
+                  setNewFormName('');
+                  setNewFormImage('');
+                  setModalFields([]);
+                }} 
+                className="text-white/80 hover:text-white transition-colors cursor-pointer"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Body with scrolling */}
+            <div className="p-6 flex-1 overflow-y-auto space-y-5">
+              
+              {/* Step 1: Form Name */}
+              <div className="space-y-1.5 text-right">
+                <label className="block text-xs font-black text-gray-700">نام فرم سفارشی:</label>
+                <input 
+                  type="text" 
+                  placeholder="مثال: بررسی نهایی توسط قائم مقام مدیرعامل" 
+                  value={newFormName}
+                  onChange={e => setNewFormName(e.target.value)}
+                  className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-cyan-600 focus:ring-1 focus:ring-cyan-600 font-medium"
+                />
+              </div>
+
+              {/* Step 2: Copy from Previous forms (OPTIONAL CHICE) */}
+              <div className="bg-gray-50 p-4 rounded-lg border border-gray-200 text-right space-y-3">
+                <label className="flex items-center gap-2.5 cursor-pointer selection:bg-transparent">
+                  <input 
+                    type="checkbox"
+                    checked={shouldCopy}
+                    onChange={e => {
+                      setShouldCopy(e.target.checked);
+                      if (e.target.checked) {
+                        setNewFormBaseKey('request');
+                      } else {
+                        setNewFormBaseKey('blank');
+                      }
+                    }}
+                    className="w-4 h-4 rounded text-[#297c83] focus:ring-[#297c83] border-gray-300 cursor-pointer"
+                  />
+                  <span className="text-xs font-black text-gray-800">مایل به کپی‌برداری ساختار از فرم‌های موجود هستم</span>
+                </label>
+
+                {shouldCopy && (
+                  <div className="space-y-1.5 pt-3 border-t border-gray-200" dir="rtl">
+                    <label className="block text-[11px] font-black text-gray-700">انتخاب فرم مبدأ جهت تکثیر ساختار:</label>
+                    <p className="text-[10px] text-gray-500 mb-1 leading-normal">
+                      برای تسریع در طراحی، یکی از فرم‌های از پیش تعریف شده را به عنوان مبنا انتخاب کنید. کلیه گام‌ها و اطلاعات آن در فرم جدید تعبیه خواهند شد.
+                    </p>
+                    <select 
+                      value={newFormBaseKey}
+                      onChange={e => setNewFormBaseKey(e.target.value)}
+                      className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:focus:border-[#297c83] bg-white font-medium text-gray-700"
+                    >
+                      <option value="status">تعیین وضعیت قرارداد</option>
+                      <option value="request">ثبت درخواست قرارداد</option>
+                      <option value="review">بررسی درخواست توسط ...</option>
+                      <option value="legalReview">بررسی قرارداد در حقوقی</option>
+                      <option value="financeReview">بررسی قرارداد توسط کارشناس مالی</option>
+                      <option value="reviewCopy">بررسی درخواست توسط ... (کپی)</option>
+                      <option value="finManagerReview">بررسی قرارداد توسط مدیر مالی</option>
+                      <option value="holdingFinManagerReview">بررسی قرارداد توسط مدیر مالی (هلدینگ)</option>
+                      <option value="legalSummary">جمع بندی قرارداد در حقوقی</option>
+                      <option value="supplierReview">بررسی قرارداد توسط تامین کننده/متقاضی</option>
+                      {customForms.length > 0 && (
+                        <>
+                          <option disabled className="text-gray-400">────────────────────────</option>
+                          {customForms.map(cf => (
+                            <option key={cf.id} value={cf.id}>
+                              {cf.name} (فرم سفارشی ثبت‌شده)
+                            </option>
+                          ))}
+                        </>
+                      )}
+                    </select>
+                  </div>
+                )}
+              </div>
+
+              {/* Step 3: Interactive Dynamic Fields Builder */}
+              <div className="space-y-3 p-4 rounded-lg border border-teal-100 bg-[#fbfdfd] text-right">
+                <div className="flex justify-between items-center sm:flex-row-reverse">
+                  <span className="text-xs font-black text-gray-800">
+                    🛠️ ساخت فیلدها و کادرهای اختصاصی (در همین‌جا):
+                  </span>
+                  <button
+                    onClick={() => {
+                      const newField = {
+                        id: `dyn_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
+                        label: '',
+                        type: 'text',
+                        required: false
+                      };
+                      setModalFields([...modalFields, newField]);
+                    }}
+                    className="flex items-center gap-1 p-1 px-3 bg-[#297c83] text-white hover:bg-[#1f6065] rounded text-[10px] font-bold transition-all shadow-xs cursor-pointer select-none"
+                  >
+                    <Plus size={11} />
+                    <span>افزودن فیلد جدید</span>
+                  </button>
+                </div>
+                
+                <p className="text-[10px] text-gray-500 leading-relaxed">
+                  می‌توانید کادرهای ورودی، چک‌باکس‌ها یا تاریخ‌های اختصاصی مدنظر خود را مستقیماً در همین بخش بسازید تا فرم نهایی با این فیلدها نمونه‌سازی شود.
+                </p>
+
+                {modalFields.length === 0 ? (
+                  <div className="text-center py-4 bg-white/60 border border-dashed border-gray-200 rounded text-[10px] text-gray-400 font-medium">
+                    هنوز فیلدی اضافه‌ نکرده‌اید. با دکمه بالا اولین کادر سفارشی را طراحی کنید.
+                  </div>
+                ) : (
+                  <div className="space-y-3 max-h-[220px] overflow-y-auto pr-1">
+                    {modalFields.map((field, idx) => (
+                      <div key={field.id} className="bg-white border border-gray-200 rounded-lg p-3 space-y-2.5 relative shadow-xs">
+                        <div className="flex justify-between items-center sm:flex-row-reverse">
+                          <span className="text-[9px] bg-cyan-50 text-cyan-800 font-extrabold px-2 py-0.5 rounded-sm">
+                            فیلد سفارشی {idx + 1}
+                          </span>
+                          <button
+                            onClick={() => {
+                              setModalFields(modalFields.filter(f => f.id !== field.id));
+                            }}
+                            className="text-gray-400 hover:text-red-500 cursor-pointer p-0.5"
+                            title="حذف فیلد"
+                          >
+                            <X size={12} />
+                          </button>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-2 text-right">
+                          <div className="space-y-1">
+                            <label className="block text-[9px] font-black text-gray-500">عنوان فیلد:</label>
+                            <input 
+                              type="text"
+                              placeholder="مثال: شماره پیگیری رسمی"
+                              value={field.label}
+                              onChange={e => {
+                                const updated = [...modalFields];
+                                updated[idx].label = e.target.value;
+                                setModalFields(updated);
+                              }}
+                              className="w-full border border-gray-250 rounded px-2.5 py-1 text-xs focus:outline-none focus:border-[#297c83] bg-white font-medium"
+                            />
+                          </div>
+
+                          <div className="space-y-1">
+                            <label className="block text-[9px] font-black text-gray-500">نوع فیلد ورودی:</label>
+                            <select
+                              value={field.type}
+                              onChange={e => {
+                                const updated = [...modalFields];
+                                updated[idx].type = e.target.value;
+                                setModalFields(updated);
+                              }}
+                              className="w-full border border-gray-250 rounded px-2.5 py-1 text-xs focus:outline-none bg-white font-medium text-gray-700"
+                            >
+                              <option value="text">متن کوتاه</option>
+                              <option value="textarea">توضیحات چندخطی</option>
+                              <option value="number">عدد</option>
+                              <option value="date">تاریخ شمسی</option>
+                              <option value="checkbox">چک‌باکس (تاییدیه)</option>
+                            </select>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2 pt-2 border-t border-gray-100 select-none">
+                          <input 
+                            type="checkbox"
+                            id={`req_${field.id}`}
+                            checked={field.required}
+                            onChange={e => {
+                              const updated = [...modalFields];
+                              updated[idx].required = e.target.checked;
+                              setModalFields(updated);
+                            }}
+                            className="w-3.5 h-3.5 rounded text-[#297c83] focus:ring-[#297c83] border-gray-300 cursor-pointer"
+                          />
+                          <label htmlFor={`req_${field.id}`} className="text-[10px] text-gray-600 font-bold cursor-pointer">
+                            فیلد اجباری است <span className="text-red-500 font-black">(علامت‌گذاری با خط قرمز کناری)</span>
+                          </label>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Step 4: Form Image Add */}
+              <div className="space-y-2 text-right text-sm font-sans" dir="rtl">
+                <label className="block text-xs font-black text-gray-700 font-sans">افزودن تصویر/نماد اختصاصی فرم:</label>
+                <p className="text-[10px] text-gray-500 leading-normal">
+                  می‌توانید تصویر دلخواه خود یا یکی از نمادهای آماده زیر را به عنوان نماد شاخص این فرم در منوی ناوبری تعیین فرمایید:
+                </p>
+                
+                <div className="grid grid-cols-2 gap-3">
+                  {/* File upload drag drop zone */}
+                  <div className="border border-dashed border-gray-300 hover:border-[#297c83] rounded-lg p-3 text-center transition-colors relative cursor-pointer flex flex-col items-center justify-center gap-1 min-h-[96px]">
+                    <input 
+                      type="file" 
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      className="absolute inset-0 opacity-0 cursor-pointer w-full"
+                    />
+                    <Plus size={20} className="text-gray-400" />
+                    <span className="text-[10px] font-bold text-gray-600">بارگذاری تصویر از سیستم</span>
+                  </div>
+
+                  {/* Preview or Preset Selection */}
+                  <div className="border border-gray-200 rounded-lg p-3 flex flex-col items-center justify-center bg-gray-50 gap-2 min-h-[96px]">
+                    {newFormImage ? (
+                      <div className="relative">
+                        <img src={newFormImage} alt="Form Icon Preview" className="w-12 h-12 rounded object-cover border border-gray-200" referrerPolicy="no-referrer" />
+                        <button 
+                          onClick={() => setNewFormImage('')}
+                          className="absolute -top-1.5 -right-1.5 bg-red-500 text-white rounded-full p-0.5 hover:bg-red-600 shadow-sm cursor-pointer"
+                          title="حذف تصویر"
+                        >
+                          <X size={10} />
+                        </button>
+                      </div>
+                    ) : (
+                      <span className="text-[10px] text-gray-400 font-medium font-sans">عدم انتخاب تصویر</span>
+                    )}
+                    <span className="text-[9px] text-gray-400 font-bold font-sans">پیش‌نمایش نماد</span>
+                  </div>
+                </div>
+
+                {/* Presets suggestions */}
+                <div className="space-y-1 mt-2">
+                  <span className="text-[9px] text-gray-400 font-bold block">الگوهای آماده برای نماد فرم:</span>
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      onClick={() => setNewFormImage('https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=120&auto=format&fit=crop&q=60')}
+                      className="px-2 py-1 text-[9px] bg-sky-50 text-sky-800 hover:bg-sky-100 rounded border border-sky-200 transition-colors cursor-pointer"
+                    >
+                      💼 اداری / مدیریت
+                    </button>
+                    <button
+                      onClick={() => setNewFormImage('https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=120&auto=format&fit=crop&q=60')}
+                      className="px-2 py-1 text-[9px] bg-red-50 text-red-800 hover:bg-red-100 rounded border border-red-200 transition-colors cursor-pointer"
+                    >
+                      ⚖️ حقوقی / دادگستری
+                    </button>
+                    <button
+                      onClick={() => setNewFormImage('https://images.unsplash.com/photo-1551836022-d5d88e9218df?w=120&auto=format&fit=crop&q=60')}
+                      className="px-2 py-1 text-[9px] bg-emerald-50 text-emerald-800 hover:bg-emerald-100 rounded border border-emerald-200 transition-colors cursor-pointer"
+                    >
+                      📊 مالی / حسابرسی
+                    </button>
+                    <button
+                      onClick={() => setNewFormImage('https://images.unsplash.com/photo-1450133064473-71024230f91b?w=120&auto=format&fit=crop&q=60')}
+                      className="px-2 py-1 text-[9px] bg-amber-50 text-amber-800 hover:bg-amber-100 rounded border border-amber-200 transition-colors cursor-pointer"
+                      title="تامین کنندگان"
+                    >
+                      🤝 تامین / خرید
+                    </button>
+                  </div>
+                </div>
+
+              </div>
+
+            </div>
+
+            {/* Footer */}
+            <div className="bg-gray-50 border-t border-gray-100 p-4 flex justify-end gap-2.5 sm:flex-row-reverse" dir="rtl">
+              <button
+                onClick={() => {
+                  if (!newFormName.trim()) {
+                    alert('لطفاً نامی برای فرم جدید وارد کنید.');
+                    return;
+                  }
+                  const resolveFormBaseKey = (key: string): string => {
+                    if (key.startsWith('custom_')) {
+                      const found = customForms.find(f => f.id === key);
+                      return found ? found.baseFormKey : 'blank';
+                    }
+                    return key;
+                  };
+
+                  const updatedForm = {
+                    id: `custom_${Date.now()}`,
+                    name: newFormName.trim(),
+                    baseFormKey: shouldCopy ? resolveFormBaseKey(newFormBaseKey) : 'blank',
+                    image: newFormImage || undefined,
+                    createdAt: new Date().toISOString()
+                  };
+                  
+                  // Clone dynamic custom fields from the origin base form if copying is requested
+                  let copiedFields: any[] = [];
+                  if (shouldCopy && newFormBaseKey) {
+                    const savedBaseFields = localStorage.getItem(`dynamic_fields_${newFormBaseKey}`);
+                    if (savedBaseFields) {
+                      try {
+                        const parsed = JSON.parse(savedBaseFields);
+                        if (Array.isArray(parsed)) {
+                          copiedFields = parsed.map((f: any) => ({
+                            ...f,
+                            id: `dyn_${Date.now()}_${Math.floor(Math.random() * 100000)}_${f.id.replace(/dyn_|[0-9_]/g, '')}`
+                          }));
+                        }
+                      } catch (e) {
+                        console.error('Error copying dynamic fields', e);
+                      }
+                    }
+                  }
+
+                  // Merge with newly designed fields from the builder modal
+                  const allFields = [...copiedFields];
+                  if (modalFields.length > 0) {
+                    const processed = modalFields.map(f => ({
+                      ...f,
+                      label: (f.label || '').trim() || 'فیلد ثبت شده اختصاصی'
+                    }));
+                    allFields.push(...processed);
+                  }
+
+                  if (allFields.length > 0) {
+                    localStorage.setItem(`dynamic_fields_${updatedForm.id}`, JSON.stringify(allFields));
+                  }
+
+                  setCustomForms(prev => [...prev, updatedForm]);
+                  handleSetActiveForm(updatedForm.id);
+                  setNewFormName('');
+                  setNewFormImage('');
+                  setModalFields([]);
+                  setIsAddFormOpen(false);
+                }}
+                className="px-5 py-2 text-xs font-bold text-white bg-[#297c83] hover:bg-[#1c5459] rounded-lg transition-colors shadow cursor-pointer"
+              >
+                ایجاد و ساخت فرم جدید
+              </button>
+              <button
+                onClick={() => {
+                  setIsAddFormOpen(false);
+                  setNewFormName('');
+                  setNewFormImage('');
+                  setModalFields([]);
+                }}
+                className="px-4 py-2 text-xs font-bold text-gray-600 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
+              >
+                انصراف
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
+
+      {deleteConfirmFormId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/65 backdrop-blur-xs p-4 overflow-y-auto font-sans text-right animate-fade-in" dir="rtl">
+          <div className="bg-white rounded-xl shadow-2xl border border-red-100 max-w-md w-full overflow-hidden flex flex-col">
+            <div className="bg-gradient-to-r from-red-700 to-[#a80000] text-white p-4 flex justify-between items-center sm:flex-row-reverse select-none">
+              <h3 className="text-sm font-black flex items-center gap-2">
+                <Trash2 size={16} />
+                <span>حذف قطعی فرم اختصاصی</span>
+              </h3>
+              <button 
+                onClick={() => setDeleteConfirmFormId(null)} 
+                className="text-white/80 hover:text-white transition-colors cursor-pointer"
+              >
+                <X size={18} />
+              </button>
+            </div>
+            
+            <div className="p-6 space-y-4">
+              <p className="text-xs text-gray-700 leading-relaxed">
+                آیا از حذف کامل فرم سفارشی <span className="font-extrabold text-[#b90000]">«{customForms.find(f => f.id === deleteConfirmFormId)?.name || 'فرم جاری'}»</span> اطمینان دارید؟
+              </p>
+              <div className="p-3 bg-red-50 border border-red-100 rounded-lg text-[11px] text-red-800 leading-relaxed font-medium">
+                ⚠️ <strong>توجه:</strong> با حذف این فرم، کلیه ساختارها، فیلدها و داده‌های ذخیره‌شده کاربران در آن به صورت قطعی پاک شده و آماده بازیابی نخواهد بود.
+              </div>
+            </div>
+
+            <div className="bg-gray-50 border-t border-gray-150 p-4 flex justify-end gap-2.5 sm:flex-row-reverse" dir="rtl">
+              <button
+                onClick={() => {
+                  const idToDelete = deleteConfirmFormId;
+                  setCustomForms(prev => prev.filter(f => f.id !== idToDelete));
+                  localStorage.removeItem(`dynamic_fields_${idToDelete}`);
+                  if (activeForm === idToDelete) {
+                    handleSetActiveForm('request');
+                  }
+                  setDeleteConfirmFormId(null);
+                }}
+                className="px-5 py-2 text-xs font-black text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors shadow-xs cursor-pointer"
+              >
+                بله، قطعاً حذف شود
+              </button>
+              <button
+                onClick={() => setDeleteConfirmFormId(null)}
+                className="px-4 py-2 text-xs font-bold text-gray-600 hover:bg-gray-150 rounded-lg transition-colors cursor-pointer border border-gray-200 bg-white"
+              >
+                انصراف و لغو
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </TestModeContext.Provider>
   );
 }

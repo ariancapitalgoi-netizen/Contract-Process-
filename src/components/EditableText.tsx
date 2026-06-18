@@ -1,14 +1,16 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { X, MousePointer2, GripVertical, BookOpen } from 'lucide-react';
+import { X, MousePointer2, GripVertical, BookOpen, Settings2 } from 'lucide-react';
 import { Reorder, useDragControls } from "motion/react";
 
 // Root context for Test Mode to be used across all forms
 export const TestModeContext = createContext<{ 
   isTestMode: boolean; 
-  setIsTestMode: (val: boolean) => void 
+  setIsTestMode: (val: boolean) => void;
+  activeForm?: string;
 }>({
   isTestMode: false,
   setIsTestMode: () => {},
+  activeForm: undefined,
 });
 
 export const useTestMode = () => useContext(TestModeContext);
@@ -23,10 +25,35 @@ export function EditableText({ isTestMode: isTestModeProp, defaultText, classNam
     return saved !== null ? saved : defaultText;
   });
 
+  const [styles, setStyles] = useState<React.CSSProperties>(() => {
+    const saved = localStorage.getItem(`editable_text_style_${defaultText}`);
+    if (saved) {
+      try { return JSON.parse(saved); } catch (e) {}
+    }
+    const globalSaved = localStorage.getItem('global_editable_text_style');
+    if (globalSaved) {
+      try { return JSON.parse(globalSaved); } catch (e) {}
+    }
+    return {};
+  });
+
+  const [showSettings, setShowSettings] = useState(false);
+
   useEffect(() => {
     const handleStorageChange = () => {
-      const saved = localStorage.getItem(`editable_text_${defaultText}`);
-      setText(saved !== null ? saved : defaultText);
+      const savedText = localStorage.getItem(`editable_text_${defaultText}`);
+      setText(savedText !== null ? savedText : defaultText);
+
+      let newStyles = {};
+      const globalSaved = localStorage.getItem('global_editable_text_style');
+      if (globalSaved) {
+        try { newStyles = JSON.parse(globalSaved); } catch(e) {}
+      }
+      const savedStyles = localStorage.getItem(`editable_text_style_${defaultText}`);
+      if (savedStyles) {
+        try { newStyles = JSON.parse(savedStyles); } catch(e) {}
+      }
+      setStyles(newStyles);
     };
 
     const eventHandler = (e: Event) => {
@@ -35,33 +62,206 @@ export function EditableText({ isTestMode: isTestModeProp, defaultText, classNam
       }
     };
 
+    const styleEventHandler = (e: Event) => {
+      if (e instanceof CustomEvent && e.detail.defaultText === defaultText) {
+        setStyles(e.detail.value);
+      }
+    };
+
+    const globalStyleEventHandler = (e: Event) => {
+      if (e instanceof CustomEvent) {
+        setStyles(e.detail.value);
+        localStorage.removeItem(`editable_text_style_${defaultText}`);
+      }
+    };
+
     window.addEventListener('storage', handleStorageChange);
     window.addEventListener('editable_text_changed', eventHandler);
-
-    handleStorageChange();
+    window.addEventListener('editable_text_style_changed', styleEventHandler);
+    window.addEventListener('global_editable_style_changed', globalStyleEventHandler);
 
     return () => {
       window.removeEventListener('storage', handleStorageChange);
       window.removeEventListener('editable_text_changed', eventHandler);
+      window.removeEventListener('editable_text_style_changed', styleEventHandler);
+      window.removeEventListener('global_editable_style_changed', globalStyleEventHandler);
     };
   }, [defaultText]);
 
-  if (!isTestMode) return <span className={className}>{text}</span>;
+  const updateStyle = (key: keyof React.CSSProperties, value: string) => {
+    const newStyles = { ...styles, [key]: value };
+    if (!value) delete newStyles[key];
+    setStyles(newStyles);
+    localStorage.setItem(`editable_text_style_${defaultText}`, JSON.stringify(newStyles));
+    window.dispatchEvent(new CustomEvent('editable_text_style_changed', { 
+      detail: { defaultText, value: newStyles } 
+    }));
+  };
+
+  const applyGlobally = () => {
+    if (confirm('آیا مطمئن هستید که می‌خواهید این استایل به تمامی متون برنامه اعمال شود؟')) {
+      localStorage.setItem('global_editable_text_style', JSON.stringify(styles));
+      // Remove all specific keys to allow global to apply everywhere
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (k && k.startsWith('editable_text_style_')) {
+          localStorage.removeItem(k);
+        }
+      }
+      window.dispatchEvent(new CustomEvent('global_editable_style_changed', { 
+        detail: { value: styles } 
+      }));
+    }
+  };
+
+  if (!isTestMode) return <span className={className} style={styles}>{text}</span>;
+
   return (
-    <input
-      type="text"
-      value={text}
-      onChange={(e) => {
-        setText(e.target.value);
-        localStorage.setItem(`editable_text_${defaultText}`, e.target.value);
-        window.dispatchEvent(new CustomEvent('editable_text_changed', { 
-          detail: { defaultText, value: e.target.value } 
-        }));
-        if (onChange) onChange(e.target.value);
-      }}
-      className={`bg-blue-50/50 border border-blue-400 rounded px-1 focus:outline-none focus:ring-1 focus:ring-blue-500 max-w-full ${className}`}
-      onClick={(e) => e.stopPropagation()}
-    />
+    <span className="relative inline-flex items-center group/editable">
+      <input
+        type="text"
+        value={text}
+        onChange={(e) => {
+          setText(e.target.value);
+          localStorage.setItem(`editable_text_${defaultText}`, e.target.value);
+          window.dispatchEvent(new CustomEvent('editable_text_changed', { 
+            detail: { defaultText, value: e.target.value } 
+          }));
+          if (onChange) onChange(e.target.value);
+        }}
+        style={styles}
+        className={`bg-blue-50/50 border border-blue-400 rounded px-1 focus:outline-none focus:ring-1 focus:ring-blue-500 max-w-full ${className}`}
+        onClick={(e) => e.stopPropagation()}
+      />
+      
+      <span 
+        role="button"
+        tabIndex={0}
+        onClick={(e) => {
+          e.stopPropagation();
+          setShowSettings(!showSettings);
+        }}
+        className="opacity-0 group-hover/editable:opacity-100 absolute -right-6 top-1/2 -translate-y-1/2 p-1 bg-white border border-gray-300 rounded shadow-sm text-gray-500 hover:text-blue-600 transition-all z-20 cursor-pointer"
+        title="تنظیمات استایل"
+      >
+        <Settings2 size={12} />
+      </span>
+
+      {showSettings && (
+        <span 
+          className="absolute right-0 top-full mt-1 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-50 p-3 text-right"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <span className="flex justify-between items-center mb-2 border-b border-gray-100 pb-1">
+            <span className="text-[10px] font-bold text-gray-600">تنظیمات متن</span>
+            <span 
+              role="button"
+              tabIndex={0}
+              onClick={() => setShowSettings(false)} 
+              className="text-gray-400 hover:text-red-500 cursor-pointer flex"
+            >
+              <X size={12} />
+            </span>
+          </span>
+          
+          <span className="flex flex-col gap-2">
+            <span className="flex flex-col gap-1">
+              <label className="text-[10px] text-gray-500">سایز فونت:</label>
+              <select 
+                value={styles.fontSize || ''} 
+                onChange={(e) => updateStyle('fontSize', e.target.value)}
+                className="w-full border border-gray-300 rounded px-1 min-h-[22px] text-[10px] bg-white"
+              >
+                <option value="">پیش‌فرض</option>
+                <option value="10px">10px</option>
+                <option value="12px">12px</option>
+                <option value="14px">14px</option>
+                <option value="16px">16px</option>
+                <option value="18px">18px</option>
+                <option value="20px">20px</option>
+                <option value="24px">24px</option>
+              </select>
+            </span>
+            
+            <span className="flex flex-col gap-1">
+              <label className="text-[10px] text-gray-500">رنگ متن:</label>
+              <span className="flex items-center gap-1">
+                <input 
+                  type="color" 
+                  value={styles.color || '#000000'} 
+                  onChange={(e) => updateStyle('color', e.target.value)}
+                  className="w-5 h-5 rounded cursor-pointer border-0 p-0"
+                />
+                <span 
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => updateStyle('color', '')}
+                  className="text-[9px] text-gray-400 hover:text-red-500 border border-gray-200 rounded px-1 cursor-pointer"
+                >حذف رنگ</span>
+              </span>
+            </span>
+
+            <span className="flex flex-col gap-1">
+              <label className="text-[10px] text-gray-500">رنگ پس‌زمینه:</label>
+              <span className="flex items-center gap-1">
+                <input 
+                  type="color" 
+                  value={styles.backgroundColor || '#ffffff'} 
+                  onChange={(e) => updateStyle('backgroundColor', e.target.value)}
+                  className="w-5 h-5 rounded cursor-pointer border-0 p-0"
+                />
+                <span 
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => updateStyle('backgroundColor', '')}
+                  className="text-[9px] text-gray-400 hover:text-red-500 border border-gray-200 rounded px-1 cursor-pointer"
+                >حذف رنگ</span>
+              </span>
+            </span>
+
+            <span className="flex flex-col gap-1">
+              <label className="text-[10px] text-gray-500">نوع فونت:</label>
+              <select 
+                value={styles.fontFamily || ''} 
+                onChange={(e) => updateStyle('fontFamily', e.target.value)}
+                className="w-full border border-gray-300 rounded px-1 min-h-[22px] text-[10px] bg-white"
+              >
+                <option value="">پیش‌فرض</option>
+                <option value="Vazirmatn, sans-serif">وزیرمتن</option>
+                <option value="Tahoma, sans-serif">تاهوما</option>
+                <option value="Arial, sans-serif">Arial</option>
+                <option value="Georgia, serif">Georgia</option>
+              </select>
+            </span>
+            
+            <span className="flex flex-col gap-1">
+              <label className="text-[10px] text-gray-500">وزن فونت:</label>
+              <select 
+                value={styles.fontWeight || ''} 
+                onChange={(e) => updateStyle('fontWeight', e.target.value)}
+                className="w-full border border-gray-300 rounded px-1 min-h-[22px] text-[10px] bg-white"
+              >
+                <option value="">پیش‌فرض</option>
+                <option value="normal">عادی (Normal)</option>
+                <option value="bold">ضخیم (Bold)</option>
+                <option value="100">بسیار نازک (100)</option>
+                <option value="300">نازک (300)</option>
+                <option value="500">متوسط (500)</option>
+                <option value="700">پررنگ (700)</option>
+                <option value="900">بسیار پررنگ (900)</option>
+              </select>
+            </span>
+          </span>
+          
+          <button 
+            onClick={applyGlobally}
+            className="w-full mt-3 bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-200 py-1.5 rounded text-[10px] font-bold transition-colors"
+          >
+            اعمال روی تمام متون
+          </button>
+        </span>
+      )}
+    </span>
   );
 }
 
