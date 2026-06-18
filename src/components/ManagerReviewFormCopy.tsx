@@ -360,24 +360,14 @@ export function ManagerReviewFormCopy({
               {/* row 3 */}
               <div id="review-contract-type-container" className="grid grid-cols-[180px_1fr] items-center p-1 rounded transition-all duration-300">
                 <div className="font-bold text-gray-800"><EditableText isTestMode={isTestMode} defaultText="نوع قرارداد:" /></div>
-                <div className="text-gray-600">
+                <div className="text-gray-655">
                   <select 
                     value={contractType} 
-                    onChange={e => {
-                      const val = e.target.value;
-                      setContractType(val);
-                      if (val.includes("تهاتر")) {
-                        setHasTemplate(null);
-                      }
-                    }} 
-                    className="w-full max-w-[250px] border border-gray-300 rounded px-2 py-1 bg-white focus:outline-none focus:ring-1 focus:ring-teal-600 text-xs shadow-sm"
+                    disabled={true}
+                    onChange={() => {}}
+                    className="w-full max-w-[250px] border border-gray-300 rounded px-2 py-1 bg-gray-100 text-gray-500 cursor-not-allowed text-xs shadow-sm"
                   >
-                    <option value="">- لطفاً انتخاب کنید...</option>
-                    <option value="خدمات">خدمات</option>
-                    <option value="کالا">کالا</option>
-                    <option value="کالا و خدمات">کالا و خدمات</option>
-                    <option value="تهاتر با نمایندگی فروش و خدمات پس از فروش">تهاتر با نمایندگی فروش و خدمات پس از فروش</option>
-                    <option value="تهاتر تامین کنندگان و پیمانکاران">تهاتر تامین کنندگان و پیمانکاران</option>
+                    <option value={contractType}>{contractType || "- لطفاً انتخاب کنید -"}</option>
                   </select>
                 </div>
               </div>

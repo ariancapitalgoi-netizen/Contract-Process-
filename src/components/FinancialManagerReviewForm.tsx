@@ -512,100 +512,34 @@ export function FinancialManagerReviewForm({
                   
                   <div className="flex justify-between items-center py-1.5 border-b border-gray-100 font-bold text-gray-800">
                     <span className="font-bold text-gray-500"><EditableText isTestMode={isTestMode} defaultText="درخواست، الحاقیه است؟:" /></span>
-                    <select 
-                      value={isAddendum === true ? "بله" : (isAddendum === false ? "خیر" : "")} 
-                      onChange={e => {
-                        const val = e.target.value;
-                        const isAdd = val === "" ? null : val === "بله";
-                        setIsAddendum(isAdd);
-                        if (isAdd === true) {
-                          setHasTemplate(false);
-                        }
-                      }} 
-                      className="w-full max-w-[150px] border border-gray-300 rounded px-2 py-1 bg-white focus:outline-none focus:ring-1 focus:ring-[#b90000] text-xs"
-                    >
-                      <option value="">- انتخاب کنید -</option>
-                      <option value="بله">بله</option>
-                      <option value="خیر">خیر</option>
-                    </select>
+                    <span className="font-bold text-gray-800">{isAddendum === true ? "بله" : (isAddendum === false ? "خیر" : "انتخاب نشده")}</span>
                   </div>
 
                   {!isBarterContract && (
                     <div className="flex justify-between items-center py-1.5 border-b border-gray-100">
                       <span className="font-bold text-gray-500"><EditableText isTestMode={isTestMode} defaultText="آیا قرارداد قالب دار است؟:" /></span>
-                      <select 
-                        value={hasTemplate === true ? "بله" : (hasTemplate === false ? "خیر" : "")} 
-                        onChange={e => {
-                          const val = e.target.value;
-                          const hasTemp = val === "" ? null : val === "بله";
-                          setHasTemplate(hasTemp);
-                          if (hasTemp === true) {
-                            setIsAddendum(false);
-                          }
-                        }} 
-                        className="w-full max-w-[150px] border border-gray-300 rounded px-2 py-1 bg-white focus:outline-none focus:ring-1 focus:ring-[#b90000] text-xs"
-                      >
-                        <option value="">- انتخاب کنید -</option>
-                        <option value="بله">بله</option>
-                        <option value="خیر">خیر</option>
-                      </select>
+                      <span className="font-bold text-gray-800">{hasTemplate === true ? "بله" : (hasTemplate === false ? "خیر" : "انتخاب نشده")}</span>
                     </div>
                   )}
 
                   <div className="flex justify-between items-center py-1.5 border-b border-gray-100">
                     <span className="font-bold text-gray-500"><EditableText isTestMode={isTestMode} defaultText="نوع قرارداد:" /></span>
-                    <select 
-                      value={contractType} 
-                      disabled
-                      className="w-full max-w-[250px] border border-gray-300 rounded px-2 py-1 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-teal-600 text-xs cursor-not-allowed text-gray-500"
-                    >
-                      <option value="">- انتخاب کنید -</option>
-                      <option value="خدمات">خدمات</option>
-                      <option value="کالا">کالا</option>
-                      <option value="کالا و خدمات">کالا و خدمات</option>
-                      <option value="تهاتر با نمایندگی فروش و خدمات پس از فروش" disabled={!isBarterContract && contractType !== ""}>تهاتر با نمایندگی فروش و خدمات پس از فروش</option>
-                      <option value="تهاتر تامین کنندگان و پیمانکاران" disabled={!isBarterContract && contractType !== ""}>تهاتر تامین کنندگان و پیمانکاران</option>
-                    </select>
+                    <span className="font-bold text-gray-800">{contractType || "- انتخاب نشده -"}</span>
                   </div>
 
                   <div className="flex justify-between items-center py-1.5 border-b border-gray-100">
                     <span className="font-bold text-gray-500"><EditableText isTestMode={isTestMode} defaultText="شرکت:" /></span>
-                    <select 
-                      value={company} 
-                      onChange={e => setCompany(e.target.value)} 
-                      className="w-full max-w-[250px] border border-gray-300 rounded px-2 py-1 bg-white focus:outline-none focus:ring-1 focus:ring-teal-600 text-xs"
-                    >
-                      <option value="">- انتخاب کنید -</option>
-                      <option value="آرین دیزل پایا">آرین دیزل پایا</option>
-                      <option value="آرین موتور پویا">آرین موتور پویا</option>
-                      <option value="آرین پارس موتور">آرین پارس موتور</option>
-                      <option value="آرین ماشین راهبرد">آرین ماشین راهبرد</option>
-                      <option value="آرین تایر پویا">آرین تایر پویا</option>
-                      <option value="هلدینگ آرین سرمایه">هلدینگ آرین سرمایه</option>
-                      <option value="واسپاری آرین پارس">واسپاری آرین پارس</option>
-                      <option value="آرین پارس توربو">آرین پارس توربو</option>
-                      <option value="آرین انرژی تابان ماندگار">آرین انرژی تابان ماندگار</option>
-                    </select>
+                    <span className="font-bold text-gray-800">{company || "- انتخاب نشده -"}</span>
                   </div>
 
                   <div className="flex justify-between items-center py-1.5 border-b border-gray-100 col-span-1 md:col-span-2">
                     <span className="font-bold text-gray-500"><EditableText isTestMode={isTestMode} defaultText="موضوع قرارداد:" /></span>
-                    <input 
-                      type="text" 
-                      value={subject} 
-                      onChange={e => setSubject(e.target.value)} 
-                      className="w-full max-w-[500px] border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-teal-600 text-xs"
-                    />
+                    <span className="font-bold text-gray-800">{subject || '- ثبت نشده -'}</span>
                   </div>
 
                   <div className="flex justify-between items-center py-1.5 border-b border-gray-100">
                     <span className="font-bold text-gray-500"><EditableText isTestMode={isTestMode} defaultText="نماینده قرارداد:" /></span>
-                    <input 
-                      type="text" 
-                      value={representative} 
-                      onChange={e => setRepresentative(e.target.value)} 
-                      className="w-full max-w-[250px] border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-teal-600 text-xs"
-                    />
+                    <span className="font-bold text-gray-800">{representative || '- ثبت نشده -'}</span>
                   </div>
 
                   <div className="flex flex-col gap-1 border-b border-gray-100 py-1.5">

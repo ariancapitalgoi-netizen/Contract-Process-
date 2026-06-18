@@ -513,16 +513,6 @@ export function LegalSummaryForm({
                   </div>
 
                   {/* Upload Buttons */}
-                  {isBarterContract && (
-                    <div id="legal-summary-barter-warning-banner" className="mt-8 bg-blue-50 text-blue-800 border border-blue-200 p-3 rounded-sm text-[11px] font-bold leading-relaxed flex items-start gap-2 shadow-sm animate-fade-in">
-                      <div className="mt-0.5 shrink-0 px-1.5 py-0.5 bg-blue-100 rounded-full text-[10px] text-blue-700">!</div>
-                      <EditableText 
-                        isTestMode={isTestMode} 
-                        defaultText="کاربر گرامی، توجه داشته باشید سند بارگذاری‌شده در این بخش، به‌منظور چاپ قرارداد و درج امضا استفاده خواهد شد، زیرا این قرارداد از نوع تهاتر است." 
-                      />
-                    </div>
-                  )}
-
                   {/* Barter Finance Attachments Display */}
                   {isBarterContract && (financialTeam === 'مالی پارس' || financialTeam === 'مالی هلدینگ' || financialTeam === 'مالی پارس و هلدینگ') && (
                     <div id="legal-summary-barter-attachments-display" className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4 animate-fade-in">
@@ -555,33 +545,44 @@ export function LegalSummaryForm({
                     </div>
                   )}
 
-                  <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="flex flex-col rounded-sm overflow-hidden border border-[#002855]">
-                      <div className="bg-[#002855] text-white text-center py-2 text-[12px] font-bold">
-                        <EditableText isTestMode={isTestMode} defaultText="لطفا PDF قرارداد جمع بندی شده را آپلود نمایید" />
+                  <div className="mt-4">
+                    {isBarterContract && (
+                      <div id="legal-summary-barter-warning-banner" className="mb-4 bg-blue-50 text-blue-800 border border-blue-200 p-3 rounded-sm text-[11px] font-bold leading-relaxed flex items-start gap-2 shadow-sm animate-fade-in">
+                        <div className="mt-0.5 shrink-0 px-1.5 py-0.5 bg-blue-100 rounded-full text-[10px] text-blue-700">!</div>
+                        <EditableText 
+                          isTestMode={isTestMode} 
+                          defaultText="کاربر گرامی، توجه داشته باشید سند بارگذاری‌شده در این بخش، به‌منظور چاپ قرارداد و درج امضا استفاده خواهد شد، زیرا این قرارداد از نوع تهاتر است." 
+                        />
                       </div>
-                      <div 
-                        className="bg-[#cbd5e1] p-4 flex flex-col items-center justify-center gap-2 cursor-pointer hover:bg-[#b8c5d6] transition-colors"
-                        onClick={() => setPdfAttached(!pdfAttached)}
-                      >
-                        <span className="text-[11px] text-[#002855] font-bold">
-                          {pdfAttached ? 'فایل بارگذاری شد' : 'فایل مربوطه را بارگذاری نمایید'}
-                        </span>
-                        <FileText size={20} className={pdfAttached ? 'text-green-700' : 'text-slate-600'} />
+                    )}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="flex flex-col rounded-sm overflow-hidden border border-[#002855]">
+                        <div className="bg-[#002855] text-white text-center py-2 text-[12px] font-bold">
+                          <EditableText isTestMode={isTestMode} defaultText="لطفا PDF قرارداد جمع بندی شده را آپلود نمایید" />
+                        </div>
+                        <div 
+                          className="bg-[#cbd5e1] p-4 flex flex-col items-center justify-center gap-2 cursor-pointer hover:bg-[#b8c5d6] transition-colors"
+                          onClick={() => setPdfAttached(!pdfAttached)}
+                        >
+                          <span className="text-[11px] text-[#002855] font-bold">
+                            {pdfAttached ? 'فایل بارگذاری شد' : 'فایل مربوطه را بارگذاری نمایید'}
+                          </span>
+                          <FileText size={20} className={pdfAttached ? 'text-green-700' : 'text-slate-600'} />
+                        </div>
                       </div>
-                    </div>
-                    <div className="flex flex-col rounded-sm overflow-hidden border border-[#002855]">
-                      <div className="bg-[#002855] text-white text-center py-2 text-[12px] font-bold">
-                        <EditableText isTestMode={isTestMode} defaultText="لطفا WORD قرارداد جمع بندی شده را آپلود نمایید" />
-                      </div>
-                      <div 
-                        className="bg-[#cbd5e1] p-4 flex flex-col items-center justify-center gap-2 cursor-pointer hover:bg-[#b8c5d6] transition-colors"
-                        onClick={() => setWordAttached(!wordAttached)}
-                      >
-                        <span className="text-[11px] text-[#002855] font-bold">
-                          {wordAttached ? 'فایل بارگذاری شد' : 'فایل مربوطه را بارگذاری نمایید'}
-                        </span>
-                        <FileEdit size={20} className={wordAttached ? 'text-blue-700' : 'text-slate-600'} />
+                      <div className="flex flex-col rounded-sm overflow-hidden border border-[#002855]">
+                        <div className="bg-[#002855] text-white text-center py-2 text-[12px] font-bold">
+                          <EditableText isTestMode={isTestMode} defaultText="لطفا WORD قرارداد جمع بندی شده را آپلود نمایید" />
+                        </div>
+                        <div 
+                          className="bg-[#cbd5e1] p-4 flex flex-col items-center justify-center gap-2 cursor-pointer hover:bg-[#b8c5d6] transition-colors"
+                          onClick={() => setWordAttached(!wordAttached)}
+                        >
+                          <span className="text-[11px] text-[#002855] font-bold">
+                            {wordAttached ? 'فایل بارگذاری شد' : 'فایل مربوطه را بارگذاری نمایید'}
+                          </span>
+                          <FileEdit size={20} className={wordAttached ? 'text-blue-700' : 'text-slate-600'} />
+                        </div>
                       </div>
                     </div>
                   </div>
