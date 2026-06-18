@@ -7,10 +7,12 @@ export const TestModeContext = createContext<{
   isTestMode: boolean; 
   setIsTestMode: (val: boolean) => void;
   activeForm?: string;
+  isDeployed?: boolean;
 }>({
   isTestMode: false,
   setIsTestMode: () => {},
   activeForm: undefined,
+  isDeployed: false,
 });
 
 export const useTestMode = () => useContext(TestModeContext);
