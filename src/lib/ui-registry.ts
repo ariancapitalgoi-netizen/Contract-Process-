@@ -11,7 +11,7 @@
 export type UIOverride = {
   text?: string;
   hidden?: boolean;
-  styles?: React.CSSProperties;
+  styles?: any;
 };
 
 export const UI_OVERRIDES: Record<string, UIOverride> = {

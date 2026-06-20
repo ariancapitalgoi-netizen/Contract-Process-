@@ -108,7 +108,6 @@ import { LegalReviewForm } from "./components/LegalReviewForm";
 import { FinanceReviewForm } from "./components/FinanceReviewForm";
 import { FinancialManagerReviewForm } from "./components/FinancialManagerReviewForm";
 import { HoldingFinancialManagerReviewForm } from "./components/HoldingFinancialManagerReviewForm";
-import { ManagerReviewFormCopy } from "./components/ManagerReviewFormCopy";
 import { LegalSummaryForm } from "./components/LegalSummaryForm";
 import { SoftwareGuide } from "./components/SoftwareGuide";
 import { SupplierReviewForm } from "./components/SupplierReviewForm";
@@ -121,6 +120,7 @@ import {
   BizagiDevNotes,
   DraggableField,
 } from "./components/EditableText";
+import { UI_OVERRIDES } from "./lib/ui-registry";
 
 function FormStatus({
   contractType,
@@ -2538,6 +2538,59 @@ export default function App() {
     partiesStr,
   ]);
 
+  const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "success" | "error">("idle");
+
+  const handleSaveUIOverrides = async () => {
+    setSaveStatus("saving");
+    try {
+      const mergedOverrides = { ...UI_OVERRIDES };
+
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith('editable_text_')) {
+          if (key.startsWith('editable_text_style_')) {
+            const originalText = key.substring('editable_text_style_'.length);
+            try {
+              const styles = JSON.parse(localStorage.getItem(key) || '{}');
+              if (!mergedOverrides[originalText]) mergedOverrides[originalText] = {};
+              mergedOverrides[originalText].styles = styles;
+              if (styles.display === 'none') {
+                mergedOverrides[originalText].hidden = true;
+              } else {
+                delete mergedOverrides[originalText].hidden;
+              }
+            } catch (e) {}
+          } else {
+            const originalText = key.substring('editable_text_'.length);
+            const modifiedText = localStorage.getItem(key);
+            if (modifiedText && modifiedText !== originalText) {
+              if (!mergedOverrides[originalText]) mergedOverrides[originalText] = {};
+              mergedOverrides[originalText].text = modifiedText;
+            }
+          }
+        }
+      }
+
+      const res = await fetch('/api/save-ui-overrides', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(mergedOverrides)
+      });
+      
+      if (res.ok) {
+        setSaveStatus("success");
+        setTimeout(() => setSaveStatus("idle"), 4000);
+      } else {
+        setSaveStatus("error");
+        setTimeout(() => setSaveStatus("idle"), 4000);
+      }
+    } catch (err) {
+      console.error(err);
+      setSaveStatus("error");
+      setTimeout(() => setSaveStatus("idle"), 4000);
+    }
+  };
+
   const handleSetTestMode = (val: boolean) => {
     if (isDeployed) {
       setIsTestMode(false);
@@ -2594,54 +2647,82 @@ export default function App() {
 
           {/* Execution Mode Selector in Header, only when isTestMode is active */}
           {isTestMode && (
-            <div className="flex flex-wrap items-center gap-1 bg-[#1c5459] p-1 rounded-sm text-xs">
-              <span className="text-gray-200 font-medium px-2 select-none text-[11px]">
-                حالت اجرای نرم‌افزار:
-              </span>
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="flex flex-wrap items-center gap-1 bg-[#1c5459] p-1 rounded-sm text-xs">
+                <span className="text-gray-200 font-medium px-2 select-none text-[11px]">
+                  حالت اجرای نرم‌افزار:
+                </span>
 
+                <button
+                  id="mode-strict-btn"
+                  onClick={() => handleSetExecutionMode("STRICT")}
+                  className={`px-3 py-1 rounded-sm transition-all flex items-center gap-1.5 font-bold cursor-pointer ${
+                    executionMode === "STRICT"
+                      ? "bg-[#b90000] text-white shadow-sm scale-102 border border-red-400"
+                      : "text-gray-300 hover:text-white hover:bg-[#22686e]"
+                  }`}
+                >
+                  <span
+                    className={`w-2 h-2 rounded-full ${executionMode === "STRICT" ? "bg-white animate-pulse" : "bg-gray-400"}`}
+                  />
+                  سخت‌گیرانه (حالت ۱)
+                </button>
+
+                <button
+                  id="mode-controlled-btn"
+                  onClick={() => handleSetExecutionMode("CONTROLLED")}
+                  className={`px-3 py-1 rounded-sm transition-all flex items-center gap-1.5 font-bold cursor-pointer ${
+                    executionMode === "CONTROLLED"
+                      ? "bg-[#d97706] text-white shadow-sm scale-102 border border-amber-400"
+                      : "text-gray-300 hover:text-white hover:bg-[#22686e]"
+                  }`}
+                >
+                  <span
+                    className={`w-2 h-2 rounded-full ${executionMode === "CONTROLLED" ? "bg-white" : "bg-gray-400"}`}
+                  />
+                  کنترل‌شده (حالت ۲)
+                </button>
+
+                <button
+                  id="mode-creative-btn"
+                  onClick={() => handleSetExecutionMode("CREATIVE")}
+                  className={`px-3 py-1 rounded-sm transition-all flex items-center gap-1.5 font-bold cursor-pointer ${
+                    executionMode === "CREATIVE"
+                      ? "bg-[#059669] text-white shadow-sm scale-102 border border-emerald-400"
+                      : "text-gray-300 hover:text-white hover:bg-[#22686e]"
+                  }`}
+                >
+                  <span
+                    className={`w-2 h-2 rounded-full ${executionMode === "CREATIVE" ? "bg-white" : "bg-gray-400"}`}
+                  />
+                  خلاقیت آزاد (حالت ۳)
+                </button>
+              </div>
+
+              {/* SAVE OVERRIDES CTA */}
               <button
-                id="mode-strict-btn"
-                onClick={() => handleSetExecutionMode("STRICT")}
-                className={`px-3 py-1 rounded-sm transition-all flex items-center gap-1.5 font-bold cursor-pointer ${
-                  executionMode === "STRICT"
-                    ? "bg-[#b90000] text-white shadow-sm scale-102 border border-red-400"
-                    : "text-gray-300 hover:text-white hover:bg-[#22686e]"
+                onClick={handleSaveUIOverrides}
+                disabled={saveStatus === "saving"}
+                className={`px-3 py-1 rounded-sm font-bold text-[11px] flex items-center gap-1.5 border shadow-sm transition-all cursor-pointer select-none active:scale-95 ${
+                  saveStatus === "saving"
+                    ? "bg-[#1c5459] text-gray-400 border-gray-600 cursor-not-allowed"
+                    : saveStatus === "success"
+                      ? "bg-emerald-600 text-white border-emerald-400"
+                      : saveStatus === "error"
+                        ? "bg-rose-700 text-white border-rose-500"
+                        : "bg-[#ffea00] hover:bg-[#ffe000] text-amber-950 border-amber-400 hover:scale-102"
                 }`}
               >
-                <span
-                  className={`w-2 h-2 rounded-full ${executionMode === "STRICT" ? "bg-white animate-pulse" : "bg-gray-400"}`}
-                />
-                سخت‌گیرانه (حالت ۱)
-              </button>
-
-              <button
-                id="mode-controlled-btn"
-                onClick={() => handleSetExecutionMode("CONTROLLED")}
-                className={`px-3 py-1 rounded-sm transition-all flex items-center gap-1.5 font-bold cursor-pointer ${
-                  executionMode === "CONTROLLED"
-                    ? "bg-[#d97706] text-white shadow-sm scale-102 border border-amber-400"
-                    : "text-gray-300 hover:text-white hover:bg-[#22686e]"
-                }`}
-              >
-                <span
-                  className={`w-2 h-2 rounded-full ${executionMode === "CONTROLLED" ? "bg-white" : "bg-gray-400"}`}
-                />
-                کنترل‌شده (حالت ۲)
-              </button>
-
-              <button
-                id="mode-creative-btn"
-                onClick={() => handleSetExecutionMode("CREATIVE")}
-                className={`px-3 py-1 rounded-sm transition-all flex items-center gap-1.5 font-bold cursor-pointer ${
-                  executionMode === "CREATIVE"
-                    ? "bg-[#059669] text-white shadow-sm scale-102 border border-emerald-400"
-                    : "text-gray-300 hover:text-white hover:bg-[#22686e]"
-                }`}
-              >
-                <span
-                  className={`w-2 h-2 rounded-full ${executionMode === "CREATIVE" ? "bg-white" : "bg-gray-400"}`}
-                />
-                خلاقیت آزاد (حالت ۳)
+                {saveStatus === "saving" && (
+                  <span className="w-3 h-3 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
+                )}
+                <span>{saveStatus === "success" ? "✓" : saveStatus === "error" ? "❌" : "💾"}</span>
+                <span>
+                  {saveStatus === "saving" && "در حال ثبت..."}
+                  {saveStatus === "success" && "تغییرات با موفقیت در کد ذخیره شد!"}
+                  {saveStatus === "error" && "خطا در برقراری ارتباط!"}
+                  {saveStatus === "idle" && "ذخیره‌سازی نهایی تغییرات (برای انتشار)"}
+                </span>
               </button>
             </div>
           )}
