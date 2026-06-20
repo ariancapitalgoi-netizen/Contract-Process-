@@ -740,18 +740,6 @@ export function FinanceReviewForm({
                       <th className="p-2 border-l border-gray-300 min-w-[100px]"><EditableText isTestMode={isTestMode} defaultText="کد اقتصادی" /></th>
                       <th className="p-2 border-l border-gray-300 min-w-[100px]"><EditableText isTestMode={isTestMode} defaultText="شماره ثبت" /></th>
                       <th className="p-2 border-l border-gray-300 min-w-[100px]"><EditableText isTestMode={isTestMode} defaultText="کد پستی" /></th>
-                      {isBarterContract && (
-                        <>
-                          <th className="p-2 border-l border-gray-300 min-w-[100px] text-teal-700"><EditableText isTestMode={isTestMode} defaultText="نوع تهاتر" /></th>
-                          <th className="p-2 border-l border-gray-300 min-w-[100px] text-teal-700"><EditableText isTestMode={isTestMode} defaultText="تا تاریخ" /></th>
-                          <th className="p-2 border-l border-gray-300 min-w-[100px] text-teal-700">مبلغ (ریال)</th>
-                          <th className="p-2 border-l border-gray-300 min-w-[120px] text-teal-700"><EditableText isTestMode={isTestMode} defaultText="شماره قرارداد مرتبط" /></th>
-                        </>
-                      )}
-                      <th className="p-2 border-l border-gray-300 min-w-[100px]"><EditableText isTestMode={isTestMode} defaultText="شماره تلفن همراه" /></th>
-                      <th className="p-2 border-l border-gray-300 min-w-[100px]"><EditableText isTestMode={isTestMode} defaultText="شماره تماس ثابت" /></th>
-                      <th className="p-2 border-l border-gray-300 min-w-[150px]"><EditableText isTestMode={isTestMode} defaultText="آدرس" /></th>
-                      <th className="p-2"><EditableText isTestMode={isTestMode} defaultText="نمایش صاحبان امضا" /></th>
                     </tr>
                   </thead>
                   <tbody>
@@ -764,75 +752,6 @@ export function FinanceReviewForm({
                         <td className="p-2 border-l border-gray-200 font-mono">{party.economicCode || party.orgEconomicCode || '-'}</td>
                         <td className="p-2 border-l border-gray-200 font-mono">{party.regNo || party.orgRegNo || '-'}</td>
                         <td className="p-2 border-l border-gray-200 font-mono">{party.postalCode || party.orgPostalCode || '-'}</td>
-                        {isBarterContract && (
-                          <>
-                            <td className="p-2 border-l border-gray-200">
-                              <select 
-                                className="w-full bg-teal-50 border border-teal-200 rounded px-1 py-0.5 outline-none focus:border-teal-500 text-[10px]"
-                                value={party.barterType || ''}
-                                onChange={(e) => {
-                                  const newParties = [...parties];
-                                  newParties[idx] = { ...newParties[idx], barterType: e.target.value };
-                                  setParties(newParties);
-                                }}
-                              >
-                                <option value="">انتخاب...</option>
-                                <option value="کمیسیون">کمیسیون</option>
-                                <option value="قطعه">قطعه</option>
-                                <option value="خودرو">خودرو</option>
-                              </select>
-                            </td>
-                            <td className="p-2 border-l border-gray-200">
-                              <input 
-                                type="text"
-                                className="w-full bg-teal-50 border border-teal-200 rounded px-1 py-0.5 outline-none focus:border-teal-500 text-[10px] font-mono text-left"
-                                dir="ltr"
-                                placeholder="----/--/--"
-                                value={party.untilDate || ''}
-                                onChange={(e) => {
-                                  const newParties = [...parties];
-                                  newParties[idx] = { ...newParties[idx], untilDate: e.target.value };
-                                  setParties(newParties);
-                                }}
-                              />
-                            </td>
-                            <td className="p-2 border-l border-gray-200">
-                              <input 
-                                type="text"
-                                className="w-full bg-teal-50 border border-teal-200 rounded px-1 py-0.5 outline-none focus:border-teal-500 text-[10px] font-mono text-left"
-                                dir="ltr"
-                                value={party.amount || ''}
-                                onChange={(e) => {
-                                  const val = e.target.value.replace(/[^0-9]/g, '');
-                                  const formatted = val ? Number(val).toLocaleString() : '';
-                                  const newParties = [...parties];
-                                  newParties[idx] = { ...newParties[idx], amount: formatted };
-                                  setParties(newParties);
-                                }}
-                              />
-                            </td>
-                            <td className="p-2 border-l border-gray-200">
-                              <input 
-                                type="text"
-                                className="w-full bg-teal-50 border border-teal-200 rounded px-1 py-0.5 outline-none focus:border-teal-500 text-[10px]"
-                                value={party.relatedContractNo || ''}
-                                onChange={(e) => {
-                                  const newParties = [...parties];
-                                  newParties[idx] = { ...newParties[idx], relatedContractNo: e.target.value };
-                                  setParties(newParties);
-                                }}
-                              />
-                            </td>
-                          </>
-                        )}
-                        <td className="p-2 border-l border-gray-200 font-mono">{party.mobile || '-'}</td>
-                        <td className="p-2 border-l border-gray-200 font-mono">{party.phone || party.orgPhone || '-'}</td>
-                        <td className="p-2 border-l border-gray-200 leading-relaxed max-w-xs">{party.address || party.orgAddress || '-'}</td>
-                        <td className="p-2 text-center">
-                          <button className="bg-teal-700 hover:bg-teal-800 text-white rounded px-2.5 py-1 font-bold text-[10px] shadow-sm transition-colors cursor-pointer">
-                            <EditableText isTestMode={isTestMode} defaultText="نمایش صاحبان امضا" />
-                          </button>
-                        </td>
                       </tr>
                     ))}
                   </tbody>

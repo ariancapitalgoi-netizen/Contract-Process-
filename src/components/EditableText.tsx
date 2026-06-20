@@ -17,14 +17,20 @@ export const TestModeContext = createContext<{
 
 export const useTestMode = () => useContext(TestModeContext);
 
+import { getUIOverride } from '../lib/ui-registry';
+
 export function EditableText({ isTestMode: isTestModeProp, defaultText, className, onChange }: { isTestMode?: boolean, defaultText: string, className?: string, onChange?: (val: string) => void }) {
   const { isTestMode: isTestModeCtx } = useTestMode();
   // Prefer explicit prop if provided, otherwise fallback to context
   const isTestMode = isTestModeProp !== undefined ? isTestModeProp : isTestModeCtx;
   
+  const override = getUIOverride(defaultText);
+
   const [text, setText] = useState(() => {
     const saved = localStorage.getItem(`editable_text_${defaultText}`);
-    return saved !== null ? saved : defaultText;
+    if (saved !== null) return saved;
+    if (override?.text) return override.text;
+    return defaultText;
   });
 
   const [styles, setStyles] = useState<React.CSSProperties>(() => {
@@ -32,6 +38,15 @@ export function EditableText({ isTestMode: isTestModeProp, defaultText, classNam
     if (saved) {
       try { return JSON.parse(saved); } catch (e) {}
     }
+    
+    // Root fix: Check the registry
+    if (override?.hidden) {
+      return { display: 'none' };
+    }
+    if (override?.styles) {
+      return override.styles;
+    }
+
     const globalSaved = localStorage.getItem('global_editable_text_style');
     if (globalSaved) {
       try { return JSON.parse(globalSaved); } catch (e) {}
