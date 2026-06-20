@@ -107,7 +107,7 @@ import { ManagerReviewForm } from "./components/ManagerReviewForm";
 import { LegalReviewForm } from "./components/LegalReviewForm";
 import { FinanceReviewForm } from "./components/FinanceReviewForm";
 import { FinancialManagerReviewForm } from "./components/FinancialManagerReviewForm";
-import { HoldingFinancialManagerReviewForm } from "./components/HoldingFinancialManagerReviewForm";
+import { FinanceStakeholderReviewForm } from "./components/FinanceStakeholderReviewForm";
 import { LegalSummaryForm } from "./components/LegalSummaryForm";
 import { SoftwareGuide } from "./components/SoftwareGuide";
 import { SupplierReviewForm } from "./components/SupplierReviewForm";
@@ -2944,7 +2944,7 @@ export default function App() {
                   >
                     <EditableText
                       isTestMode={isTestMode}
-                      defaultText="بررسی قرارداد توسط کارشناس مالی"
+                      defaultText="بررسی قرارداد توسط کارشناس مالی/مدیر"
                     />
                   </div>
 
@@ -2969,17 +2969,17 @@ export default function App() {
                     role="button"
                     tabIndex={0}
                     onClick={() =>
-                      handleSetActiveForm("holdingFinManagerReview")
+                      handleSetActiveForm("financeStakeholderReview")
                     }
                     className={`px-4 py-3 text-right rounded text-sm transition-colors cursor-pointer select-none ${
-                      activeForm === "holdingFinManagerReview"
+                      activeForm === "financeStakeholderReview"
                         ? "bg-[#fff1f1] text-[#a80000] border border-[#f4b8b8] shadow-sm font-bold"
                         : "hover:bg-gray-200 text-gray-700 bg-transparent border border-transparent"
                     }`}
                   >
                     <EditableText
                       isTestMode={isTestMode}
-                      defaultText="بررسی قرارداد توسط مدیر مالی (هلدینگ)"
+                      defaultText="بررسی ذینفع مالی پارس/هلدینگ"
                     />
                   </div>
 
@@ -3138,10 +3138,10 @@ export default function App() {
                   <option value="review">بررسی درخواست توسط ...</option>
                   <option value="legalReview">بررسی قرارداد در حقوقی</option>
                   <option value="financeReview">
-                    بررسی قرارداد توسط کارشناس مالی
+                    بررسی قرارداد توسط کارشناس مالی/مدیر
                   </option>
-                  <option value="holdingFinManagerReview">
-                    بررسی قرارداد توسط مدیر مالی (هلدینگ)
+                  <option value="financeStakeholderReview">
+                    بررسی ذینفع مالی پارس/هلدینگ
                   </option>
 
                   <option value="legalSummary">
@@ -3237,14 +3237,14 @@ export default function App() {
                                 ? "بررسی قرارداد در حقوقی"
                                 : resolvedCustomForm.baseFormKey ===
                                     "financeReview"
-                                  ? "بررسی قرارداد توسط کارشناس مالی"
+                                  ? "بررسی قرارداد توسط کارشناس مالی/مدیر"
 
                                     : resolvedCustomForm.baseFormKey ===
                                         "finManagerReview"
                                       ? "بررسی قرارداد توسط مدیر مالی"
                                       : resolvedCustomForm.baseFormKey ===
-                                          "holdingFinManagerReview"
-                                        ? "بررسی قرارداد توسط مدیر مالی (هلدینگ)"
+                                          "financeStakeholderReview"
+                                        ? "بررسی ذینفع مالی پارس/هلدینگ"
                                         : resolvedCustomForm.baseFormKey ===
                                             "legalSummary"
                                           ? "جمع بندی قرارداد در حقوقی"
@@ -3397,8 +3397,8 @@ export default function App() {
                   parties={parties}
                   setParties={setParties}
                 />
-              ) : resolvedBaseKey === "holdingFinManagerReview" ? (
-                <HoldingFinancialManagerReviewForm
+              ) : (resolvedBaseKey === "financeStakeholderReview" || resolvedBaseKey === "reviewCopy") ? (
+                <FinanceStakeholderReviewForm
                   isTestMode={isTestMode}
                   contractType={contractType}
                   setContractType={setContractType}
@@ -3741,14 +3741,14 @@ export default function App() {
                         بررسی قرارداد در حقوقی
                       </option>
                       <option value="financeReview">
-                        بررسی قرارداد توسط کارشناس مالی
+                        بررسی قرارداد توسط کارشناس مالی/مدیر
                       </option>
 
                       <option value="finManagerReview">
                         بررسی قرارداد توسط مدیر مالی
                       </option>
-                      <option value="holdingFinManagerReview">
-                        بررسی قرارداد توسط مدیر مالی (هلدینگ)
+                      <option value="financeStakeholderReview">
+                        بررسی ذینفع مالی پارس/هلدینگ
                       </option>
                       <option value="legalSummary">
                         جمع بندی قرارداد در حقوقی

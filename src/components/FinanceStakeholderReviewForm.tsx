@@ -5,7 +5,7 @@ import { BizagiDevNotes, DevNoteItem, DraggableField, EditableText } from './Edi
 import { getNotesOverride } from '../lib/ui-registry';
 import { Reorder } from "motion/react";
 
-export interface HoldingFinancialManagerReviewFormProps {
+export interface FinanceStakeholderReviewFormProps {
   isTestMode?: boolean;
   contractType: string;
   setContractType: (v: string) => void;
@@ -43,7 +43,7 @@ export interface HoldingFinancialManagerReviewFormProps {
   setParties: (v: any[]) => void;
 }
 
-export function HoldingFinancialManagerReviewForm({
+export function FinanceStakeholderReviewForm({
   isTestMode = false,
   contractType,
   setContractType,
@@ -79,7 +79,7 @@ export function HoldingFinancialManagerReviewForm({
   setIdentityAttachment,
   parties,
   setParties
-}: HoldingFinancialManagerReviewFormProps) {
+}: FinanceStakeholderReviewFormProps) {
   const [activeTab, setActiveTab] = useState<'opinion' | 'legal' | 'contractInfo'>('opinion');
   const isBarterContract = typeof contractType === "string" && contractType.includes("تهاتر");
 
@@ -90,48 +90,46 @@ export function HoldingFinancialManagerReviewForm({
   const legalDecision = localStorage.getItem('legal_decision') || 'تایید و ارسال قرارداد به واحد مالی';
   const legalAttachment = localStorage.getItem('legal_attachment') === 'true';
 
-  // Holding Finance Manager specific form states
-  const [greenComment, setGreenComment] = useState(() => localStorage.getItem('holdingFinManager_greenComment') || '');
-  const [yellowComment, setYellowComment] = useState(() => localStorage.getItem('holdingFinManager_yellowComment') || '');
-  const [redComment, setRedComment] = useState(() => localStorage.getItem('holdingFinManager_redComment') || '');
-  const [decision, setDecision] = useState(() => localStorage.getItem('holdingFinManager_decision') || '');
-  const [attachment, setAttachment] = useState<boolean>(() => localStorage.getItem('holdingFinManager_attachment') === 'true');
-  const [generalComment, setGeneralComment] = useState(() => localStorage.getItem('holdingFinManager_generalComment') || '');
-  const [stakeholderName, setStakeholderName] = useState(() => localStorage.getItem('holdingFinManager_stakeholderName') || '');
-  const [estimation, setEstimation] = useState(() => localStorage.getItem('holdingFinManager_estimation') || '');
+  // State specific to FinanceStakeholderReviewForm
+  const [greenComment, setGreenComment] = useState(() => localStorage.getItem('stakeholder_greenComment') || '');
+  const [yellowComment, setYellowComment] = useState(() => localStorage.getItem('stakeholder_yellowComment') || '');
+  const [redComment, setRedComment] = useState(() => localStorage.getItem('stakeholder_redComment') || '');
+  const [decision, setDecision] = useState(() => localStorage.getItem('stakeholder_decision') || 'تایید');
+  const [attachment, setAttachment] = useState<boolean>(() => localStorage.getItem('stakeholder_attachment') === 'true');
+  const [generalComment, setGeneralComment] = useState(() => localStorage.getItem('stakeholder_generalComment') || '');
+  const [estimation, setEstimation] = useState(() => localStorage.getItem('stakeholder_estimation') || '');
 
   const [isRequirementsOpen, setIsRequirementsOpen] = useState(true);
 
   const [order, setOrder] = useState(() => {
-    const saved = localStorage.getItem('holdingFinManagerForm_order');
+    const saved = localStorage.getItem('stakeholderForm_order');
     return saved ? JSON.parse(saved) : ['decision', 'estimation', 'attachment', 'generalComment'];
   });
 
   const [labels, setLabels] = useState<Record<string, string>>(() => {
-    const saved = localStorage.getItem('holdingFinManagerForm_labels');
+    const saved = localStorage.getItem('stakeholderForm_labels');
     return saved ? JSON.parse(saved) : {
       decision: 'تصمیم اتخاذ شده:',
       estimation: 'برآورد مالی (ریال):',
-      attachment: 'ضمائم:',
+      attachment: 'ضمائم نهایی هلدینگ:',
       generalComment: 'توضیحات:'
     };
   });
 
   // Save states to local storage
   React.useEffect(() => {
-    localStorage.setItem('holdingFinManager_greenComment', greenComment);
-    localStorage.setItem('holdingFinManager_yellowComment', yellowComment);
-    localStorage.setItem('holdingFinManager_redComment', redComment);
-    localStorage.setItem('holdingFinManager_decision', decision);
-    localStorage.setItem('holdingFinManager_attachment', attachment ? 'true' : 'false');
-    localStorage.setItem('holdingFinManager_generalComment', generalComment);
-    localStorage.setItem('holdingFinManager_stakeholderName', stakeholderName);
-    localStorage.setItem('holdingFinManager_estimation', estimation);
-  }, [greenComment, yellowComment, redComment, decision, attachment, generalComment, stakeholderName, estimation]);
+    localStorage.setItem('stakeholder_greenComment', greenComment);
+    localStorage.setItem('stakeholder_yellowComment', yellowComment);
+    localStorage.setItem('stakeholder_redComment', redComment);
+    localStorage.setItem('stakeholder_decision', decision);
+    localStorage.setItem('stakeholder_attachment', attachment ? 'true' : 'false');
+    localStorage.setItem('stakeholder_generalComment', generalComment);
+    localStorage.setItem('stakeholder_estimation', estimation);
+  }, [greenComment, yellowComment, redComment, decision, attachment, generalComment, estimation]);
 
   const handleOrderChange = (newOrder: string[]) => {
     setOrder(newOrder);
-    localStorage.setItem('holdingFinManagerForm_order', JSON.stringify(newOrder));
+    localStorage.setItem('stakeholderForm_order', JSON.stringify(newOrder));
   };
 
   const renderLabel = (id: string, defaultLabel: string) => {
@@ -143,7 +141,7 @@ export function HoldingFinancialManagerReviewForm({
         onChange={(e) => {
           const newLabels = { ...labels, [id]: e.target.value };
           setLabels(newLabels);
-          localStorage.setItem('holdingFinManagerForm_labels', JSON.stringify(newLabels));
+          localStorage.setItem('stakeholderForm_labels', JSON.stringify(newLabels));
         }}
         className="w-full border border-blue-400 bg-blue-50/50 px-1 py-0.5 rounded text-[11px] font-bold text-gray-800 shadow-inner focus:outline-none focus:ring-1 focus:ring-blue-500 min-w-[120px]"
         onClick={e => e.stopPropagation()}
@@ -166,83 +164,65 @@ export function HoldingFinancialManagerReviewForm({
       const el = document.getElementById(targetId);
       if (el) {
         el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        el.classList.add('ring-4', 'ring-[#b90000]', 'ring-offset-2', 'bg-amber-50', 'scale-[1.01]', 'transition-all', 'duration-300');
+        el.classList.add('ring-4', 'ring-[#b90000]', 'ring-offset-2', 'bg-red-50', 'scale-[1.01]');
         setTimeout(() => {
-          el.classList.remove('ring-4', 'ring-[#b90000]', 'ring-offset-2', 'bg-amber-50', 'scale-[1.01]', 'transition-all', 'duration-300');
-        }, 2500);
+          el.classList.remove('ring-4', 'ring-[#b90000]', 'ring-offset-2', 'bg-red-50', 'scale-[1.01]');
+        }, 2000);
       }
-    }, 150);
+    }, 100);
   };
 
   const [notes, setNotes] = useState<DevNoteItem[]>(() => {
     if (isTestMode) {
-      const saved = localStorage.getItem('holding_finance_review_notes');
+      const saved = localStorage.getItem('stakeholder_review_notes');
       if (saved) return JSON.parse(saved);
     }
     const defaultNotes = [
       {
-        text: "محدودیت تغییر نوع قرارداد: در صورتی که نوع قرارداد تهاتری باشد، فیلد غیرقابل ویرایش است. همچنین در صورت انتخاب گزینه‌های خدمات یا کالا، امکان تغییر به گزینه‌های تهاتر وجود ندارد.",
-        targetId: "contract-type-info-row",
-        tabId: "contractInfo"
-       },
-      {
-        text: "تغییر گزینه‌های تصمیم در قراردادهای تهاتری: در قراردادهای تهاتری، گزینه‌های 'تصمیم اتخاذ شده' به (تایید، بررسی توسط ذینفع، رد) تغییر می‌یابد.",
-        targetId: "holding-finance-manager-decision-row",
-        tabId: "opinion"
+        text: "تصمیم اتخاذ شده: گزینه‌های تصمیم اتخاذ شده در این فرم منحصراً شامل تایید، نیاز به اصلاح و رد می‌باشد.",
+        targetId: "stakeholder-decision-row"
       },
       {
-        text: "فیلد جستجوی ذینفع: در صورت انتخاب 'بررسی توسط ذینفع' در قراردادهای تهاتری، فیلد جستجوی نام نمایش داده می‌شود.",
-        targetId: "holding-finance-manager-decision-row",
-        tabId: "opinion"
+        text: "ضمائم نهایی هلدینگ: فیلد ضمائم تحت عنوان 'ضمائم نهایی هلدینگ' بدون الزام به آپلود تعریف شده است.",
+        targetId: "stakeholder-attachment-row"
       },
       {
-        text: "اخطار رد درخواست: در صورت انتخاب گزینه 'رد'، بنر هشدار جهت آگاهی‌بخشی در خصوص مختومه شدن فرآیند نمایش داده می‌شود.",
-        targetId: "holding-finance-manager-decision-row",
-        tabId: "opinion"
+        text: "عدم الزامی بودن ضمائم در تایید: در صورت انتخاب گزینه تایید هم بارگذاری ضمائم غیر الزامی و اختیاری می‌باشد.",
+        targetId: "stakeholder-attachment-row"
       },
       {
-        text: "تغییر نام ضمائم در قراردادهای تهاتری تایید شده: در صورت تایید قرارداد تهاتر، عنوان فیلد ضمائم به 'ضمائم نهایی هلدینگ' تغییر کرده و الزامی (required) می‌گردد.",
-        targetId: "holding-finance-manager-attachment-row",
-        tabId: "opinion"
-      },
-      {
-        text: "نمایش مشروط فیلدهای الحاقیه و قالب: فیلد 'الحاقیه' همیشه نمایش داده می‌شود، اما فیلد 'قالب‌دار' در قراردادهای تهاتری مخفی می‌گردد.",
-        targetId: "contract-info-tab",
+        text: "قابلیت ویرایش تب اطلاعات قرارداد: فیلدهای اطلاعات قرارداد بر اساس دسترسی ذینفع مالی تعریف و نمایش داده می‌شوند.",
+        targetId: "stakeholder-contract-info",
         tabId: "contractInfo"
       }
     ];
-    return getNotesOverride('holding_finance_review_notes', defaultNotes);
+    return getNotesOverride('stakeholder_review_notes', defaultNotes);
   });
 
-  React.useEffect(() => {
-    localStorage.setItem('holding_finance_review_notes', JSON.stringify(notes));
-  }, [notes]);
+  const handleNotesChange = (newNotes: DevNoteItem[]) => {
+    setNotes(newNotes);
+    localStorage.setItem('stakeholder_review_notes', JSON.stringify(newNotes));
+  };
 
   const fieldComponents: Record<string, ReactNode> = {
     decision: (
       <FieldRow
-        id="holding-finance-manager-decision-row"
+        id="stakeholder-decision-row"
         label={renderLabel('decision', 'تصمیم اتخاذ شده:')}
         required
         hasValue={!!decision}
         labelWidthClass="grid-cols-[160px_1fr] md:grid-cols-[200px_1fr]"
       >
         <div className="flex flex-wrap items-center gap-4 py-1">
-          {(isBarterContract
-            ? [
-                { value: 'تایید', label: 'تایید' },
-                { value: 'بررسی توسط ذینفع', label: 'بررسی توسط ذینفع' },
-                { value: 'رد', label: 'رد' }
-              ]
-            : [
-                { value: 'تایید', label: 'تایید' },
-                { value: 'نیاز به اصلاح', label: 'نیاز به اصلاح' }
-              ]
-          ).map((option) => (
+          {[
+            { value: 'تایید', label: 'تایید' },
+            { value: 'نیاز به اصلاح', label: 'نیاز به اصلاح' },
+            { value: 'رد', label: 'رد' }
+          ].map((option) => (
             <label key={option.value} className="flex items-center gap-1.5 cursor-pointer">
               <input
                 type="radio"
-                name="holding_finance_manager_decision"
+                name="stakeholder_decision"
                 value={option.value}
                 checked={decision === option.value}
                 onChange={() => setDecision(option.value)}
@@ -257,23 +237,12 @@ export function HoldingFinancialManagerReviewForm({
             کاربر گرامی، توجه داشته باشید در صورت رد این درخواست، فرایند مختومه شده و قابل بازیابی نخواهد بود؛ لذا خواهشمند است پیش از انتخاب دکمه ارسال، از تصمیم خود اطمینان حاصل نمایید.
           </div>
         )}
-        {isBarterContract && decision === 'بررسی توسط ذینفع' && (
-          <div className="w-full mt-3 pt-3 border-t border-gray-200">
-            <input
-              type="text"
-              className="w-full border border-gray-300 rounded-sm p-2 outline-none focus:border-red-500 shadow-inner text-[12px]"
-              value={stakeholderName}
-              onChange={(e) => setStakeholderName(e.target.value)}
-              placeholder="جستجوی نام همکار..."
-            />
-          </div>
-        )}
       </FieldRow>
     ),
     estimation: (
       !isBarterContract ? (
         <FieldRow
-          id="holding-finance-manager-estimation-row"
+          id="stakeholder-estimation-row"
           label={renderLabel('estimation', 'برآورد مالی (ریال):')}
           labelWidthClass="grid-cols-[160px_1fr] md:grid-cols-[200px_1fr]"
         >
@@ -295,16 +264,10 @@ export function HoldingFinancialManagerReviewForm({
     ),
     attachment: (
       <>
-        {isBarterContract && decision === 'تایید' && (
-          <div id="holding-finance-barter-warning" className="mb-4 bg-blue-50 text-blue-800 border-r-4 border-blue-600 p-3 rounded-sm text-[11px] font-bold shadow-sm animate-fade-in flex items-center gap-2">
-            <Info size={16} className="shrink-0" />
-            <EditableText isTestMode={isTestMode} defaultText="کاربر گرامی، توجه داشته باشید لازم است قرارداد نهایی خود را در این بخش بارگذاری نمایید." />
-          </div>
-        )}
         <FieldRow
-          id="holding-finance-manager-attachment-row"
-          label={(isBarterContract && decision === 'تایید') ? 'ضمائم نهایی هلدینگ' : renderLabel('attachment', 'ضمائم:')}
-          required={isBarterContract && decision === 'تایید'}
+          id="stakeholder-attachment-row"
+          label={renderLabel('attachment', 'ضمائم نهایی هلدینگ')}
+          required={false}
           hasValue={attachment}
           labelWidthClass="grid-cols-[160px_1fr] md:grid-cols-[200px_1fr]"
         >
@@ -322,7 +285,7 @@ export function HoldingFinancialManagerReviewForm({
     ),
     generalComment: (
       <FieldRowTop
-        id="holding-finance-manager-generalcomment-row"
+        id="stakeholder-generalcomment-row"
         label={renderLabel('generalComment', 'توضیحات:')}
         labelWidthClass="grid-cols-[160px_1fr] md:grid-cols-[200px_1fr]"
       >
@@ -330,7 +293,7 @@ export function HoldingFinancialManagerReviewForm({
           className="w-full h-20 border border-gray-300 rounded-sm p-2 outline-none focus:border-red-500 shadow-inner resize-none text-[12px] disabled:bg-gray-50 disabled:text-gray-400"
           value={generalComment}
           onChange={(e) => setGeneralComment(e.target.value)}
-          placeholder="توضیحات تکمیلی یا نهایی بررسی مالی مدیر هلدینگ..."
+          placeholder="توضیحات تکمیلی یا نهایی بررسی ذینفع مالی پارس/هلدینگ..."
         ></textarea>
       </FieldRowTop>
     )
@@ -341,9 +304,9 @@ export function HoldingFinancialManagerReviewForm({
       {/* Breadcrumb / Title Bar */}
       <div className="bg-white border border-gray-200 rounded-sm shadow-sm px-4 py-3 flex items-center justify-between">
         <span className="text-gray-800 text-xs md:text-sm">
-          <EditableText isTestMode={isTestMode} defaultText="درخواست انعقاد قرارداد" /> <span className="text-gray-400 mx-1">›</span> <EditableText isTestMode={isTestMode} defaultText="بررسی قرارداد توسط مدیر مالی (هلدینگ)" />
+          <EditableText isTestMode={isTestMode} defaultText="درخواست انعقاد قرارداد" /> <span className="text-gray-400 mx-1">›</span> <EditableText isTestMode={isTestMode} defaultText="بررسی ذینفع مالی پارس/هلدینگ" />
         </span>
-        <span className="text-gray-400 font-mono text-[10px] hidden md:inline">FORM_HOLDING_FIN_MANAGER_REVIEW</span>
+        <span className="text-gray-400 font-mono text-[10px] hidden md:inline">FORM_STAKEHOLDER_REVIEW</span>
       </div>
 
       {/* Form Body Wrapper */}
@@ -374,19 +337,19 @@ export function HoldingFinancialManagerReviewForm({
         {activeTab === 'opinion' && (
           <div className="flex flex-col lg:flex-row min-h-[500px]">
             
-            {/* Right/Center Content section: The 3 big feedback boxes + outcomes */}
+            {/* Right/Center Content section: Feedback boxes + outcomes */}
             <div className="flex-1 p-4 md:p-6 border-l border-gray-100 flex flex-col gap-5">
               
               {/* Feedback Textareas */}
-              <div id="holding-finance-manager-feedback-boxes" className="flex flex-col gap-4">
+              <div id="stakeholder-feedback-boxes" className="flex flex-col gap-4">
                 
                 {/* 1. Green comment block */}
-                <div id="holding-finance-manager-green-box" className="border border-green-500 rounded-sm overflow-hidden shadow-sm">
+                <div id="stakeholder-green-box" className="border border-green-500 rounded-sm overflow-hidden shadow-sm">
                   <div className="bg-[#00a86b] text-white px-3 py-1.5 text-center text-xs md:text-[13px] font-bold">
                     <EditableText isTestMode={isTestMode} defaultText="در صورت وجود در قرارداد منجر به بهینه شدن قرارداد شده و بهبود ایجاد می‌کند ولی رعایت آن الزامی نمی‌باشد" />
                   </div>
                   <textarea
-                    className="w-full h-24 p-2.5 text-slate-800 outline-none focus:bg-emerald-50/20 text-xs md:text-sm font-sans resize-y animate-pulse-once"
+                    className="w-full h-24 p-2.5 text-slate-800 outline-none focus:bg-emerald-50/20 text-xs md:text-sm font-sans resize-y shrink-0"
                     value={greenComment}
                     onChange={(e) => setGreenComment(e.target.value)}
                     placeholder="بازخوردهای سبز خود را وارد نمایید..."
@@ -394,12 +357,12 @@ export function HoldingFinancialManagerReviewForm({
                 </div>
 
                 {/* 2. Yellow comment block */}
-                <div id="holding-finance-manager-yellow-box" className="border border-yellow-400 rounded-sm overflow-hidden shadow-sm">
+                <div id="stakeholder-yellow-box" className="border border-yellow-400 rounded-sm overflow-hidden shadow-sm">
                   <div className="bg-[#ffea00] text-[#4d3c00] px-3 py-1.5 text-center text-xs md:text-[13px] font-bold">
                     <EditableText isTestMode={isTestMode} defaultText="ریسک مالی برای سازمان دارد و بهتر است رعایت شود" />
                   </div>
                   <textarea
-                    className="w-full h-24 p-2.5 text-slate-800 outline-none focus:bg-amber-50/30 text-xs md:text-sm font-sans resize-y"
+                    className="w-full h-24 p-2.5 text-slate-800 outline-none focus:bg-amber-50/30 text-xs md:text-sm font-sans resize-y shrink-0"
                     value={yellowComment}
                     onChange={(e) => setYellowComment(e.target.value)}
                     placeholder="بازخوردهای زرد ریسک متوسط مالی را وارد نمایید..."
@@ -407,12 +370,12 @@ export function HoldingFinancialManagerReviewForm({
                 </div>
 
                 {/* 3. Red comment block */}
-                <div id="holding-finance-manager-red-box" className="border border-red-500 rounded-sm overflow-hidden shadow-sm">
+                <div id="stakeholder-red-box" className="border border-red-500 rounded-sm overflow-hidden shadow-sm">
                   <div className="bg-red-600 text-white px-3 py-1.5 text-center text-xs md:text-[13px] font-bold">
                     <EditableText isTestMode={isTestMode} defaultText="ریسک مالی بالایی برای سازمان دارد و قابل مذاکره نمی‌باشد" />
                   </div>
                   <textarea
-                    className="w-full h-24 p-2.5 text-slate-800 outline-none focus:bg-red-50/20 text-xs md:text-sm font-sans resize-y"
+                    className="w-full h-24 p-2.5 text-slate-800 outline-none focus:bg-red-50/20 text-xs md:text-sm font-sans resize-y shrink-0"
                     value={redComment}
                     onChange={(e) => setRedComment(e.target.value)}
                     placeholder="بازخوردهای قرمز مالی با ریسک بالا و غیر قابل تغییر را وارد نمایید..."
@@ -424,7 +387,7 @@ export function HoldingFinancialManagerReviewForm({
               {/* Finance decision section header */}
               <div className="mt-4 pt-4 border-t border-gray-100">
                 <h3 className="text-[#005f77] font-bold text-[13px] mb-4">
-                  <EditableText isTestMode={isTestMode} defaultText="نتیجه بررسی مالی مدیر هلدینگ در خصوص قرارداد" />
+                  <EditableText isTestMode={isTestMode} defaultText="نتیجه بررسی مالی ذینفع مالی پارس/هلدینگ در خصوص قرارداد" />
                 </h3>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-[12px] text-gray-700 bg-gray-50/80 p-3 rounded-sm border border-gray-200/60 mb-4 leading-relaxed">
@@ -559,169 +522,128 @@ export function HoldingFinancialManagerReviewForm({
 
             </div>
 
-            {/* Decision Details */}
-            <div className="mt-4 bg-gray-50 border border-gray-200 p-4 rounded-sm space-y-3 text-xs md:text-[13px]">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 leading-relaxed">
-                <div>
-                  <span className="font-semibold text-gray-500"><EditableText isTestMode={isTestMode} defaultText="تصمیم‌گیرنده:" /></span>{' '}
-                  <span className="font-bold text-gray-800">Mehrbod Adili</span>
-                </div>
-                <div className="md:text-right text-right">
-                  <span className="font-semibold text-gray-500"><EditableText isTestMode={isTestMode} defaultText="زمان ثبت تصمیم:" /></span>{' '}
-                  <span className="font-mono text-gray-800">۱۴۰۵/۰۳/۲۶ ۰۲:۴۷ ب.ظ</span>
-                </div>
+            {/* General recommendation summary */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+              <div className="border border-gray-200 bg-gray-50/60 p-3 rounded-sm text-xs">
+                <span className="font-semibold text-gray-500"><EditableText isTestMode={isTestMode} defaultText="تصمیم اولیه واحد حقوقی:" /></span>{' '}
+                <span className="font-bold text-gray-800">{legalDecision}</span>
               </div>
-              <div className="h-px bg-gray-200" />
-              <div>
-                <span className="font-semibold text-gray-500"><EditableText isTestMode={isTestMode} defaultText="تصمیم اتخاذ شده:" /></span>{' '}
-                <span className="font-bold text-[#b90000]">{legalDecision}</span>
-              </div>
-              <div>
-                <span className="font-semibold text-gray-500"><EditableText isTestMode={isTestMode} defaultText="ضمائم:" /></span>{' '}
-                <span className="font-medium text-gray-700">{legalAttachment ? 'فایل بارگذاری شد' : 'ضمائم در نظر حقوقی بارگذاری نشده است'}</span>
+              <div className="border border-gray-200 bg-gray-50/60 p-3 rounded-sm flex items-center justify-between text-xs">
+                <span className="font-semibold text-gray-500"><EditableText isTestMode={isTestMode} defaultText="ضمیمه حقوقی:" /></span>
+                <div className="flex items-center gap-1">
+                  <span className="text-gray-700 font-bold">{legalAttachment ? 'بارگذاری شده' : 'ندارد'}</span>
+                  <Paperclip size={12} className={legalAttachment ? 'text-blue-500' : 'text-gray-400'} />
+                </div>
               </div>
             </div>
 
           </div>
         )}
 
-        {/* Tab 3: Contract Info Tab (Read-Only) */}
+        {/* Tab 3: Contract Info */}
         {activeTab === 'contractInfo' && (
-          <div id="contract-info-tab" className="p-4 md:p-6 flex flex-col gap-6 text-[12px] text-gray-800">
-            
-            {/* Header read-only fields layout */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-12 bg-gray-50/40 p-4 rounded border border-gray-150">
+          <div id="stakeholder-contract-info" className="p-4 md:p-6 flex flex-col gap-5">
+            {/* Displaying standard non-editable form structure representing 'اطلاعات قرارداد' */}
+            <div id="stakeholder-contract-info-grid" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-4 gap-x-6 text-[12px]">
               
-              <div className="flex justify-between items-center py-1.5 border-b border-gray-100">
-                <span className="font-bold text-gray-800 text-[11px]"><EditableText isTestMode={isTestMode} defaultText="درخواست، الحاقیه است؟:" /></span>
-                <span className="font-bold text-gray-800 text-[11px]">{isAddendum === true ? "بله" : (isAddendum === false ? "خیر" : "انتخاب نشده")}</span>
-              </div>
+              <FieldRow id="stakeholder-info-contract-type" label={<EditableText isTestMode={isTestMode} defaultText="نوع قرارداد:" />} required>
+                <div className="py-1 font-semibold text-gray-800">{contractType || 'تهاتر با نمایندگی فروش و خدمات پس از فروش'}</div>
+              </FieldRow>
 
-              {!isBarterContract && (
-                <div className="flex justify-between items-center py-1.5 border-b border-gray-100">
-                  <span className="font-bold text-gray-800 text-[11px]"><EditableText isTestMode={isTestMode} defaultText="آیا قرارداد قالب دار است؟:" /></span>
-                  <span className="font-bold text-gray-800 text-[11px]">{hasTemplate === true ? "بله" : (hasTemplate === false ? "خیر" : "انتخاب نشده")}</span>
-                </div>
-              )}
+              <FieldRow id="stakeholder-info-isaddendum" label={<EditableText isTestMode={isTestMode} defaultText="آیا الحاقیه است؟" />} required>
+                <div className="py-1 font-semibold text-gray-800">{isAddendum ? 'بله' : 'خیر'}</div>
+              </FieldRow>
 
-              <div id="contract-type-info-row" className="flex justify-between items-center py-1.5 border-b border-gray-100">
-                <span className="font-bold text-gray-800 text-[11px]"><EditableText isTestMode={isTestMode} defaultText="نوع قرارداد:" /></span>
-                <span className="font-bold text-gray-800 text-[11px]">{contractType || "- انتخاب نشده -"}</span>
-              </div>
+              <FieldRow id="stakeholder-info-hastemplate" label={<EditableText isTestMode={isTestMode} defaultText="قالب‌دار:" />} required>
+                <div className="py-1 font-semibold text-gray-800">{hasTemplate ? 'بله' : 'خیر'}</div>
+              </FieldRow>
 
-              <div className="flex justify-between items-center py-1.5 border-b border-gray-100">
-                <span className="font-bold text-gray-800 text-[11px]"><EditableText isTestMode={isTestMode} defaultText="شرکت:" /></span>
-                <span className="font-bold text-gray-800 text-[11px]">{company || "- انتخاب نشده -"}</span>
-              </div>
+              <FieldRow id="stakeholder-info-company" label={<EditableText isTestMode={isTestMode} defaultText="طرف قرارداد:" />} required>
+                <input
+                  type="text"
+                  disabled
+                  value={company}
+                  className="w-full border border-gray-200 rounded-sm p-1.5 outline-none bg-gray-50 text-gray-500 font-sans text-[11px]"
+                />
+              </FieldRow>
 
-              <div className="flex justify-between items-center py-1.5 border-b border-gray-100 col-span-1 md:col-span-2">
-                <span className="font-bold text-gray-500"><EditableText isTestMode={isTestMode} defaultText="موضوع قرارداد:" /></span>
-                <span className="font-bold text-gray-800 text-[11px]">{subject || '- ثبت نشده -'}</span>
-              </div>
+              <FieldRow id="stakeholder-info-subject" label={<EditableText isTestMode={isTestMode} defaultText="موضوع قرارداد:" />} required>
+                <input
+                  type="text"
+                  disabled
+                  value={subject}
+                  className="w-full border border-gray-200 rounded-sm p-1.5 outline-none bg-gray-50 text-gray-500 font-sans text-[11px]"
+                />
+              </FieldRow>
 
-              <div className="flex justify-between items-center py-1.5 border-b border-gray-100">
-                <span className="font-bold text-gray-500"><EditableText isTestMode={isTestMode} defaultText="نماینده قرارداد:" /></span>
-                <span className="font-bold text-gray-800 text-[11px]">{representative || '- ثبت نشده -'}</span>
-              </div>
+              <FieldRow id="stakeholder-info-representative" label={<EditableText isTestMode={isTestMode} defaultText="نماینده مجاز:" />} required>
+                <input
+                  type="text"
+                  disabled
+                  value={representative}
+                  className="w-full border border-gray-200 rounded-sm p-1.5 outline-none bg-gray-50 text-gray-500 font-sans text-[11px]"
+                />
+              </FieldRow>
 
-              <div className="flex flex-col gap-1 border-b border-gray-100 py-1.5">
-                <div className="flex justify-between items-center w-full">
-                  <span className="font-bold text-gray-500"><EditableText isTestMode={isTestMode} defaultText="زمان شروع مشخص ندارد:" /></span>
-                  <input type="checkbox" checked={noStartDate} disabled className="w-[14px] h-[14px] rounded-sm border-gray-300 text-teal-600 cursor-not-allowed" />
-                </div>
-                {!noStartDate && (
-                  <div className="flex justify-between items-center w-full mt-1">
-                    <span className="font-bold text-gray-400 text-[10px]"><EditableText isTestMode={isTestMode} defaultText="برنامه زمانبندی شروع:" /></span>
-                    <span className="font-bold text-gray-800">{startDate || 'ثبت نشده'}</span>
-                  </div>
-                )}
-              </div>
+              <FieldRow id="stakeholder-info-start-date" label={<EditableText isTestMode={isTestMode} defaultText="تاریخ شروع قرارداد:" />} required={!noStartDate}>
+                <div className="py-1 font-mono text-gray-800">{noStartDate ? 'بدون تاریخ شروع' : (startDate || '۱۴۰۵/۰۳/۰۱')}</div>
+              </FieldRow>
 
-              <div className="flex flex-col gap-1 border-b border-gray-100 py-1.5">
-                <div className="flex justify-between items-center w-full">
-                  <span className="font-bold text-gray-500"><EditableText isTestMode={isTestMode} defaultText="زمان پایان مشخص ندارد:" /></span>
-                  <input type="checkbox" checked={noEndDate} disabled className="w-[14px] h-[14px] rounded-sm border-gray-300 text-teal-600 cursor-not-allowed" />
-                </div>
-                {!noEndDate && (
-                  <div className="flex justify-between items-center w-full mt-1">
-                    <span className="font-bold text-gray-400 text-[10px]"><EditableText isTestMode={isTestMode} defaultText="برنامه زمانبندی پایان:" /></span>
-                    <span className="font-bold text-gray-800">{endDate || 'ثبت نشده'}</span>
-                  </div>
-                )}
-              </div>
+              <FieldRow id="stakeholder-info-end-date" label={<EditableText isTestMode={isTestMode} defaultText="تاریخ خاتمه قرارداد:" />} required={!noEndDate}>
+                <div className="py-1 font-mono text-gray-800">{noEndDate ? 'بدون تاریخ خاتمه' : (endDate || '۱۴۰۶/۰۳/۰۱')}</div>
+              </FieldRow>
 
-              <div className="flex justify-between items-center py-1.5 border-b border-gray-100">
-                <span className="font-bold text-gray-500"><EditableText isTestMode={isTestMode} defaultText="گزارش توجیه فنی دارد؟:" /></span>
-                <input type="checkbox" checked={hasTechnicalReport} disabled className="w-[14px] h-[14px] rounded-sm border-gray-300 text-teal-600 cursor-not-allowed" />
-              </div>
+              <FieldRow id="stakeholder-info-technical-report" label={<EditableText isTestMode={isTestMode} defaultText="گزارش فنی:" />} required>
+                <div className="py-1 font-semibold text-gray-800">{hasTechnicalReport ? 'بله' : 'خیر'}</div>
+              </FieldRow>
 
-              <div className="flex justify-between items-center py-1.5 border-b border-gray-100">
-                <span className="font-bold text-gray-500"><EditableText isTestMode={isTestMode} defaultText="شرایط خصوصی دارد؟:" /></span>
-                <input type="checkbox" checked={hasPrivateConditions} disabled className="w-[14px] h-[14px] rounded-sm border-gray-300 text-teal-600 cursor-not-allowed" />
-              </div>
-
-              <div className="flex flex-col gap-1 py-1.5 col-span-1 md:col-span-2">
-                <span className="font-bold text-gray-500"><EditableText isTestMode={isTestMode} defaultText="شرح درخواست:" /></span>
-                <p className="bg-white p-2 border border-gray-150 rounded min-h-[40px] text-gray-700 text-xs whitespace-pre-wrap">{requestDescription || 'شرح ثبت نشده است'}</p>
-              </div>
-
-              {hasPrivateConditions && (
-                <div className="flex flex-col gap-1 py-1.5 col-span-1 md:col-span-2">
-                  <span className="font-bold text-gray-500"><EditableText isTestMode={isTestMode} defaultText="توضیحات شرایط خصوصی:" /></span>
-                  <p className="bg-white p-2 border border-gray-150 rounded min-h-[40px] text-gray-700 text-xs whitespace-pre-wrap">{privateConditionsDesc || 'توضیحاتی ثبت نشده است'}</p>
-                </div>
-              )}
-
-              <div className="flex justify-between items-center py-1.5 col-span-1 md:col-span-2">
-                <span className="font-bold text-gray-500"><EditableText isTestMode={isTestMode} defaultText="ضمائم قرارداد:" /></span>
-                <span className="text-gray-700"><EditableText isTestMode={isTestMode} defaultText="فایل مربوطه را بارگذاری نمایید" /></span>
-              </div>
-
-              <div className="flex justify-between items-center py-1.5 border-b border-gray-100 col-span-1 md:col-span-2">
-                <span className="font-bold text-gray-500"><EditableText isTestMode={isTestMode} defaultText="پیوست اولیه قرارداد:" /></span>
-                <a href="#" onClick={e => e.preventDefault()} className="text-blue-600 font-semibold hover:underline">ثبت درخواست قرارداد.PNG</a>
-              </div>
-
-              <div className="flex justify-between items-center py-1.5 col-span-1 md:col-span-2">
-                <span className="font-bold text-gray-500"><EditableText isTestMode={isTestMode} defaultText="پیوست مدارک هویتی طرفين قرارداد:" /></span>
-                <a href="#" onClick={e => e.preventDefault()} className="text-blue-600 font-semibold hover:underline">ثبت درخواست قرارداد.PNG</a>
-              </div>
-
+              <FieldRow id="stakeholder-info-private-conditions" label={<EditableText isTestMode={isTestMode} defaultText="شرایط خصوصی دارد؟" />} required>
+                <div className="py-1 font-semibold text-gray-800">{hasPrivateConditions ? 'بله' : 'خیر'}</div>
+              </FieldRow>
             </div>
 
-            {/* Primary Party Table Section */}
-            <div className="mt-4">
-              <div className="bg-[#e2e7ec] border border-gray-300 rounded-t-sm px-4 py-2 flex items-center justify-between font-bold text-gray-800 text-[12px]">
-                <span><EditableText isTestMode={isTestMode} defaultText="اطلاعات اولیه طرف قرارداد" /></span>
-              </div>
+            {hasPrivateConditions && (
+              <FieldRowTop id="stakeholder-info-private-desc" label={<EditableText isTestMode={isTestMode} defaultText="شرح شرایط خصوصی:" />}>
+                <textarea
+                  disabled
+                  value={privateConditionsDesc}
+                  className="w-full h-16 border border-gray-200 rounded-sm p-2 outline-none bg-gray-50 text-gray-500 font-sans text-[11px] resize-none"
+                />
+              </FieldRowTop>
+            )}
 
-              <div className="overflow-x-auto border-x border-b border-gray-300 rounded-b-sm bg-white">
-                <table className="w-full text-right border-collapse text-[11px]">
-                  <thead>
-                    <tr className="bg-gray-150 text-gray-700 border-b border-gray-300 font-bold">
-                      <th className="p-2 border-l border-gray-300"><EditableText isTestMode={isTestMode} defaultText="نوع طرف قرارداد" /></th>
-                      <th className="p-2 border-l border-gray-300"><EditableText isTestMode={isTestMode} defaultText="نام و نام خانوادگی" /></th>
-                      <th className="p-2 border-l border-gray-300 font-bold"><EditableText isTestMode={isTestMode} defaultText="نام سازمان" /></th>
-                      <th className="p-2 border-l border-gray-300"><EditableText isTestMode={isTestMode} defaultText="کد ملی" /></th>
-                      <th className="p-2 border-l border-gray-300"><EditableText isTestMode={isTestMode} defaultText="کد اقتصادی" /></th>
-                      <th className="p-2 border-l border-gray-300"><EditableText isTestMode={isTestMode} defaultText="شماره ثبت" /></th>
-                      <th className="p-2 border-l border-gray-300"><EditableText isTestMode={isTestMode} defaultText="کد پستی" /></th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {parties.map((party, idx) => (
-                      <tr key={party.id || idx} className="hover:bg-gray-50 transition-colors border-b border-gray-200">
-                        <td className="p-2 border-l border-gray-200">{party.type}</td>
-                        <td className="p-2 border-l border-gray-200">{party.name || party.orgName || '-'}</td>
-                        <td className="p-2 border-l border-gray-200 font-bold text-slate-900">{party.orgName || '-'}</td>
-                        <td className="p-2 border-l border-gray-200 font-mono">{party.nationalId || party.orgNationalId || '-'}</td>
-                        <td className="p-2 border-l border-gray-200 font-mono">{party.economicCode || party.orgEconomicCode || '-'}</td>
-                        <td className="p-2 border-l border-gray-200 font-mono">{party.regNo || party.orgRegNo || '-'}</td>
-                        <td className="p-2 border-l border-gray-200 font-mono">{party.postalCode || party.orgPostalCode || '-'}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+            <FieldRowTop id="stakeholder-info-request-desc" label={<EditableText isTestMode={isTestMode} defaultText="توضیحات درخواست:" />}>
+              <textarea
+                disabled
+                value={requestDescription}
+                className="w-full h-16 border border-gray-200 rounded-sm p-2 outline-none bg-gray-50 text-gray-500 font-sans text-[11px] resize-none"
+              />
+            </FieldRowTop>
+
+            {/* Attachments Checklist */}
+            <div id="stakeholder-info-attachments" className="border border-gray-200 rounded-sm p-4 bg-gray-50/40">
+              <h4 className="text-gray-800 font-bold text-xs mb-3 border-b border-gray-200 pb-2 flex items-center gap-1.5">
+                <Paperclip size={13} className="text-gray-500" />
+                <EditableText isTestMode={isTestMode} defaultText="ضمائم و مدارک پیوست شده" />
+              </h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                
+                <div className="flex items-center justify-between p-2.5 bg-white border border-gray-200 rounded-sm shadow-sm">
+                  <span className="text-[11px] text-gray-700 font-semibold"><EditableText isTestMode={isTestMode} defaultText="پیوست درخواست قرارداد اولیه:" /></span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-emerald-700 text-[11px] font-bold">{initialAttachment ? 'بارگذاری شده' : 'فایل موجود نیست'}</span>
+                    <Paperclip size={13} className={initialAttachment ? 'text-emerald-500' : 'text-gray-400'} />
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between p-2.5 bg-white border border-gray-200 rounded-sm shadow-sm">
+                  <span className="text-[11px] text-gray-700 font-semibold"><EditableText isTestMode={isTestMode} defaultText=" مدارک شناسایی طرف قرارداد:" /></span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-emerald-700 text-[11px] font-bold">{identityAttachment ? 'بارگذاری شده' : 'فایل موجود نیست'}</span>
+                    <Paperclip size={13} className={identityAttachment ? 'text-emerald-500' : 'text-gray-400'} />
+                  </div>
+                </div>
+
               </div>
             </div>
 
@@ -729,13 +651,12 @@ export function HoldingFinancialManagerReviewForm({
         )}
       </div>
 
-      {/* Bizagi Technical Notes for Holding Finance Manager Review */}
-      <BizagiDevNotes 
-        notes={notes} 
-        isTestMode={isTestMode} 
-        onAction={handleDevNoteAction} 
-        onNotesChange={setNotes}
-      />
+      {/* Developer Interactive Technical Notes Area - ONLY in test mode */}
+      {isTestMode && (
+        <div id="stakeholder-technical-notes" className="mt-6">
+          <BizagiDevNotes notes={notes} onAction={handleDevNoteAction} isTestMode={isTestMode} onNotesChange={handleNotesChange} />
+        </div>
+      )}
     </div>
   );
 }

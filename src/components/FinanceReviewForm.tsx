@@ -199,12 +199,12 @@ export function FinanceReviewForm({
         tabId: "opinion"
       },
       {
-        text: "تغییر نام ضمائم در قراردادهای تهاتری تایید شده: در صورت تایید قرارداد تهاتر، عنوان فیلد ضمائم به 'ضمائم نهایی آرین پارس' تغییر کرده و الزامی (required) می‌گردد.",
+        text: "تغییر نام ضمائم در قراردادهای تهاتری تایید شده: در صورت تایید قرارداد تهاتر، عنوان فیلد ضمائم به 'ضمائم نهایی آرین پارس/هلدینگ' تغییر کرده و الزامی (required) میگردد. توجه نمایید بر اساس مالک فعالیت تغییر می کند یعنی اگر تیم پارس کار را انجام دادن نوشته شود ضمائم نهایی آرین پارس",
         targetId: "finance-attachment-row",
         tabId: "opinion"
       },
       {
-        text: "نمایش بنر راهنما در ضمائم نهایی تهاتر: در صورتی که فیلد ضمائم نهایی آرین پارس نمایش داده شود، بنر آبی رنگ جهت راهنمایی کاربر برای بارگذاری نسخه نهایی قرارداد ظاهر می‌شود.",
+        text: "نمایش بنر راهنما در ضمائم نهایی تهاتر: در صورتی که فیلد ضمائم نهایی آرین پارس/هلدینگ نمایش داده شود، بنر آبی رنگ جهت راهنمایی کاربر برای بارگذاری نسخه نهایی قرارداد ظاهر می‌شود.",
         targetId: "finance-barter-warning",
         tabId: "opinion"
       },
@@ -341,7 +341,7 @@ export function FinanceReviewForm({
         )}
         <FieldRow
           id="finance-attachment-row"
-          label={(isBarterContract && decision === 'تایید') ? <EditableText defaultText="ضمائم نهایی آرین پارس" /> : <EditableText defaultText="ضمائم:" />}
+          label={(isBarterContract && decision === 'تایید') ? <EditableText isTestMode={isTestMode} defaultText="ضمائم نهایی آرین پارس/هلدینگ" /> : <EditableText isTestMode={isTestMode} defaultText="ضمائم:" />}
           required={isBarterContract && decision === 'تایید'}
           hasValue={attachment}
           labelWidthClass="grid-cols-[160px_1fr] md:grid-cols-[200px_1fr]"
@@ -379,7 +379,7 @@ export function FinanceReviewForm({
       {/* Breadcrumb / Title Bar */}
       <div className="bg-white border border-gray-200 rounded-sm shadow-sm px-4 py-3 flex items-center justify-between">
         <span className="text-gray-800 text-xs md:text-sm">
-          <EditableText isTestMode={isTestMode} defaultText="درخواست انعقاد قرارداد" /> <span className="text-gray-400 mx-1">›</span> <EditableText isTestMode={isTestMode} defaultText="بررسی قرارداد توسط کارشناس مالی" />
+          <EditableText isTestMode={isTestMode} defaultText="درخواست انعقاد قرارداد" /> <span className="text-gray-400 mx-1">›</span> <EditableText isTestMode={isTestMode} defaultText="بررسی قرارداد توسط کارشناس مالی/مدیر" />
         </span>
         <span className="text-gray-400 font-mono text-[10px] hidden md:inline">FORM_FINANCE_REVIEW</span>
       </div>
