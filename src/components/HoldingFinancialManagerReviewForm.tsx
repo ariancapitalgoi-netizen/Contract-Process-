@@ -712,10 +712,6 @@ export function HoldingFinancialManagerReviewForm({
                       <th className="p-2 border-l border-gray-300"><EditableText isTestMode={isTestMode} defaultText="کد اقتصادی" /></th>
                       <th className="p-2 border-l border-gray-300"><EditableText isTestMode={isTestMode} defaultText="شماره ثبت" /></th>
                       <th className="p-2 border-l border-gray-300"><EditableText isTestMode={isTestMode} defaultText="کد پستی" /></th>
-                      <th className="p-2 border-l border-gray-300"><EditableText isTestMode={isTestMode} defaultText="شماره تلفن همراه" /></th>
-                      <th className="p-2 border-l border-gray-300"><EditableText isTestMode={isTestMode} defaultText="شماره تماس ثابت" /></th>
-                      <th className="p-2 border-l border-gray-300"><EditableText isTestMode={isTestMode} defaultText="آدرس" /></th>
-                      <th className="p-2"><EditableText isTestMode={isTestMode} defaultText="نمایش صاحبان امضا" /></th>
                     </tr>
                   </thead>
                   <tbody>
@@ -728,14 +724,6 @@ export function HoldingFinancialManagerReviewForm({
                         <td className="p-2 border-l border-gray-200 font-mono">{party.economicCode || party.orgEconomicCode || '-'}</td>
                         <td className="p-2 border-l border-gray-200 font-mono">{party.regNo || party.orgRegNo || '-'}</td>
                         <td className="p-2 border-l border-gray-200 font-mono">{party.postalCode || party.orgPostalCode || '-'}</td>
-                        <td className="p-2 border-l border-gray-200 font-mono">{party.mobile || '-'}</td>
-                        <td className="p-2 border-l border-gray-200 font-mono">{party.phone || party.orgPhone || '-'}</td>
-                        <td className="p-2 border-l border-gray-200 leading-relaxed max-w-xs">{party.address || party.orgAddress || '-'}</td>
-                        <td className="p-2 text-center">
-                          <button className="bg-teal-700 hover:bg-teal-800 text-white rounded px-2.5 py-1 font-bold text-[10px] shadow-sm transition-colors cursor-pointer">
-                            <EditableText isTestMode={isTestMode} defaultText="نمایش صاحبان امضا" />
-                          </button>
-                        </td>
                       </tr>
                     ))}
                   </tbody>

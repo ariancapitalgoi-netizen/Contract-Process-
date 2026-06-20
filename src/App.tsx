@@ -2247,7 +2247,6 @@ function FormRequest({
                   "نام افراد و یا سازمان‌های طرف قرارداد به‌صورت کامل بیان شود",
                   "موضوع قرارداد به‌صورت کامل بیان شود",
                   "اطلاعات عمومی قرارداد به‌صورت کامل بیان شود",
-                  "خرید خدمات الزام به بستن قرارداد دارد",
                   "در صورت وجود کمیسیون معاملات، تمامی مستندات مربوطه (مانند صورت‌جلسه، فرم‌های مربوطه) در بخش ضمایم قرارداد ضمیمه شود",
                   "در صورت حقوقی بودن طرفین قرارداد، باید تصویر روزنامه رسمی در مدارک هویتی طرفین قرارداد ضمیمه گردد",
                   "در صورت حقیقی بودن طرفین قرارداد، باید تصویر کارت ملی در مدارک هویتی طرفین قرارداد ضمیمه گردد",
@@ -2426,12 +2425,39 @@ export default function App() {
   // custom forms states
   const [customForms, setCustomForms] = useState<any[]>(() => {
     const saved = localStorage.getItem("app_custom_forms");
+    let forms = [];
     if (saved) {
       try {
-        return JSON.parse(saved);
+        forms = JSON.parse(saved);
       } catch (e) {}
     }
-    return [];
+
+    // Root fix: Ensure essential forms are always present in the source code
+    // This solves the persistence issue for published/shared versions
+    const essentialForms = [
+      {
+        id: "finance-stakeholder-review",
+        name: "بررسی ذینفع مالی پارس/هلدینگ",
+        baseFormKey: "financeReview", // Using the robust FinanceReviewForm component
+        image: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&q=80&w=200",
+        fields: []
+      }
+    ];
+
+    // Merge logic: Add essential forms if they don't exist by ID
+    essentialForms.forEach(ef => {
+      if (!forms.find((f: any) => f.id === ef.id)) {
+        forms.push(ef);
+      } else {
+        // If it exists, ensure it has the correct baseFormKey to preserve "unique features"
+        const existing = forms.find((f: any) => f.id === ef.id);
+        if (existing.baseFormKey === "reviewCopy") {
+          existing.baseFormKey = "financeReview";
+        }
+      }
+    });
+
+    return forms;
   });
 
   const [isAddFormOpen, setIsAddFormOpen] = useState(false);
@@ -2826,7 +2852,7 @@ export default function App() {
                   >
                     <EditableText
                       isTestMode={isTestMode}
-                      defaultText="بررسی درخواست توسط ... (کپی)"
+                      defaultText="بررسی ذینفع مالی پارس/هلدینگ"
                     />
                   </div>
                   <div
@@ -3024,7 +3050,7 @@ export default function App() {
                     بررسی قرارداد توسط مدیر مالی (هلدینگ)
                   </option>
                   <option value="reviewCopy">
-                    بررسی درخواست توسط ... (کپی)
+                    بررسی ذینفع مالی پارس/هلدینگ
                   </option>
                   <option value="legalSummary">
                     جمع بندی قرارداد در حقوقی
@@ -3122,7 +3148,7 @@ export default function App() {
                                   ? "بررسی قرارداد توسط کارشناس مالی"
                                   : resolvedCustomForm.baseFormKey ===
                                       "reviewCopy"
-                                    ? "بررسی درخواست توسط ... (کپی)"
+                                    ? "بررسی ذینفع مالی پارس/هلدینگ"
                                     : resolvedCustomForm.baseFormKey ===
                                         "finManagerReview"
                                       ? "بررسی قرارداد توسط مدیر مالی"
@@ -3358,7 +3384,7 @@ export default function App() {
                   setParties={setParties}
                 />
               ) : resolvedBaseKey === "reviewCopy" ? (
-                <ManagerReviewFormCopy
+                <HoldingFinancialManagerReviewForm
                   isTestMode={isTestMode}
                   contractType={contractType}
                   setContractType={setContractType}
@@ -3665,7 +3691,7 @@ export default function App() {
                         بررسی قرارداد توسط کارشناس مالی
                       </option>
                       <option value="reviewCopy">
-                        بررسی درخواست توسط ... (کپی)
+                        بررسی ذینفع مالی پارس/هلدینگ
                       </option>
                       <option value="finManagerReview">
                         بررسی قرارداد توسط مدیر مالی
