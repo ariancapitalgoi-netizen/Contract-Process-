@@ -2,6 +2,7 @@ import React, { useState, useEffect, ReactNode } from 'react';
 import { Paperclip, ChevronDown, FileText, FileEdit } from 'lucide-react';
 import { FieldRow, FieldRowTop } from './FormComponents';
 import { BizagiDevNotes, DevNoteItem, DraggableField, EditableText } from './EditableText';
+import { getNotesOverride } from '../lib/ui-registry';
 import { Reorder } from "motion/react";
 
 export interface LegalSummaryFormProps {
@@ -152,9 +153,11 @@ export function LegalSummaryForm({
   };
 
   const [notes, setNotes] = useState<DevNoteItem[]>(() => {
-    const saved = localStorage.getItem('legal_summary_notes_v11');
-    if (saved) return JSON.parse(saved);
-    return [
+    if (isTestMode) {
+      const saved = localStorage.getItem('legal_summary_notes_v11');
+      if (saved) return JSON.parse(saved);
+    }
+    const defaultNotes = [
       {
         text: "نمایش ضمائم نهایی تیم‌های مالی در تهاتر: بر اساس تیم مالی انتخاب شده در مرحله قبل (پارس/هلدینگ/هر دو)، ضمائم تایید شده توسط آن‌ها در این بخش نمایش داده می‌شود.",
         targetId: "legal-summary-barter-attachments-display",
@@ -201,6 +204,7 @@ export function LegalSummaryForm({
         tabId: "contractInfo"
       }
     ];
+    return getNotesOverride('legal_summary_notes_v11', defaultNotes);
   });
 
   useEffect(() => {

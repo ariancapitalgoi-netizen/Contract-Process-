@@ -2,6 +2,7 @@ import React, { useState, ReactNode } from 'react';
 import { Paperclip, ChevronDown, ChevronUp } from 'lucide-react';
 import { FieldRow, FieldRowTop } from './FormComponents';
 import { BizagiDevNotes, DevNoteItem, DraggableField, EditableText } from './EditableText';
+import { getNotesOverride } from '../lib/ui-registry';
 import { Reorder } from "motion/react";
 
 export interface FinancialManagerReviewFormProps {
@@ -224,9 +225,11 @@ export function FinancialManagerReviewForm({
   };
 
   const [notes, setNotes] = useState<DevNoteItem[]>(() => {
-    const saved = localStorage.getItem('finManager_review_notes');
-    if (saved) return JSON.parse(saved);
-    return [
+    if (isTestMode) {
+      const saved = localStorage.getItem('finManager_review_notes');
+      if (saved) return JSON.parse(saved);
+    }
+    const defaultNotes = [
       {
         text: "محدودیت تغییر نوع قرارداد: در صورتی که نوع قرارداد تهاتری باشد، فیلد غیرقابل ویرایش است. همچنین در صورت انتخاب گزینه‌های خدمات یا کالا، امکان تغییر به گزینه‌های تهاتر وجود ندارد.",
         targetId: "contract-info-tab",
@@ -242,6 +245,7 @@ export function FinancialManagerReviewForm({
         tabId: "contractInfo"
       }
     ];
+    return getNotesOverride('finManager_review_notes', defaultNotes);
   });
 
   React.useEffect(() => {

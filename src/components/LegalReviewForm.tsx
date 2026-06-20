@@ -2,6 +2,7 @@ import React, { useState, ReactNode } from 'react';
 import { Paperclip, ChevronDown } from 'lucide-react';
 import { FieldRow, FieldRowTop } from './FormComponents';
 import { BizagiDevNotes, DevNoteItem, DraggableField, EditableText } from './EditableText';
+import { getNotesOverride } from '../lib/ui-registry';
 import { Reorder } from "motion/react";
 
 export interface LegalReviewFormProps {
@@ -148,9 +149,11 @@ export function LegalReviewForm({
   };
 
   const [notes, setNotes] = useState<DevNoteItem[]>(() => {
-    const saved = localStorage.getItem('legal_review_notes');
-    if (saved) return JSON.parse(saved);
-    return [
+    if (isTestMode) {
+      const saved = localStorage.getItem('legal_review_notes');
+      if (saved) return JSON.parse(saved);
+    }
+    const defaultNotes = [
       {
         text: "محدودیت تغییر نوع قرارداد: در صورتی که نوع قرارداد تهاتری باشد، فیلد غیرقابل ویرایش است. همچنین در صورت انتخاب گزینه‌های خدمات یا کالا، امکان تغییر به گزینه‌های تهاتر وجود ندارد.",
         targetId: "review-contract-type-container",
@@ -170,6 +173,7 @@ export function LegalReviewForm({
         targetId: "legal-decision-row"
       }
     ];
+    return getNotesOverride('legal_review_notes', defaultNotes);
   });
 
   React.useEffect(() => {

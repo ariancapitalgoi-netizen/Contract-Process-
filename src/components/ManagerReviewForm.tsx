@@ -2,6 +2,7 @@ import React, { useState, ReactNode } from 'react';
 import { Paperclip, GripVertical, ChevronDown } from 'lucide-react';
 import { FieldRow, FieldRowTop } from './FormComponents';
 import { BizagiDevNotes, DevNoteItem, DraggableField, EditableText } from './EditableText';
+import { getNotesOverride } from '../lib/ui-registry';
 import { Reorder, useDragControls } from "motion/react";
 
 export interface ManagerReviewFormProps {
@@ -123,35 +124,29 @@ export function ManagerReviewForm({
   };
 
   const [notes, setNotes] = useState<DevNoteItem[]>(() => {
-    const saved = localStorage.getItem('senior_manager_review_notes');
-    if (saved) return JSON.parse(saved);
-    return [
+    if (isTestMode) {
+      const saved = localStorage.getItem('senior_manager_review_notes');
+      if (saved) return JSON.parse(saved);
+    }
+    const defaultNotes = [
       {
         text: "در تب اطلاعات قرارداد امکان ویرایش به کاربر داده شود",
         targetId: "review-contract-info"
-      },
-      {
-        text: "نمایش مشروط فیلدهای الحاقیه و قالب: فیلد 'الحاقیه' همیشه نمایش داده می‌شود، اما فیلد 'قالب‌دار' در قراردادهای تهاتری مخفی می‌گردد.",
-        targetId: "review-contract-info",
-        tabId: "contractInfo"
       },
       {
         text: "فیلد پیوست های تب اطلاعات قرارداد باید به این صورت باشد که بتوان به آن پیوست اضافه نمود ولی نمی توان پیوستی از آن حذف کرد",
         targetId: "review-contract-info"
       },
       {
-        text: "محدودیت نوع قرارداد: فیلد نوع قرارداد در این فرم منحصراً شامل گزینه‌های تهاتر (تهاتر با نمایندگی فروش و خدمات پس از فروش، تهاتر تامین کنندگان و پیمانکاران) می‌باشد و غیرقابل ویرایش است.",
+        text: "محدودیت نوع قرارداد: فیلد نوع قرارداد در این فرم غیر قابل ویرایش است.",
         targetId: "review-contract-type-container"
       },
       {
         text: "هشدار رد درخواست: در صورتی که تصمیم 'رد' انتخاب شود، یک باکس هشدار قرمز رنگ نمایش داده شود که کاربر را از مختومه شدن فرایند مطلع می‌کند",
         targetId: "review-decision"
-      },
-      {
-        text: "گزینه‌های فیلد 'تصمیم اتخاذ شده' صرفاً جنبه اطلاع‌رسانی در جدول اقدامات داشته و هیچ‌گونه عملکرد سیستمی یا تغییر در فرایند ندارند.",
-        targetId: "review-decision"
       }
     ];
+    return getNotesOverride('senior_manager_review_notes', defaultNotes);
   });
 
   React.useEffect(() => {

@@ -2431,33 +2431,11 @@ export default function App() {
         forms = JSON.parse(saved);
       } catch (e) {}
     }
-
-    // Root fix: Ensure essential forms are always present in the source code
-    // This solves the persistence issue for published/shared versions
-    const essentialForms = [
-      {
-        id: "finance-stakeholder-review",
-        name: "بررسی ذینفع مالی پارس/هلدینگ",
-        baseFormKey: "financeReview", // Using the robust FinanceReviewForm component
-        image: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&q=80&w=200",
-        fields: []
-      }
-    ];
-
-    // Merge logic: Add essential forms if they don't exist by ID
-    essentialForms.forEach(ef => {
-      if (!forms.find((f: any) => f.id === ef.id)) {
-        forms.push(ef);
-      } else {
-        // If it exists, ensure it has the correct baseFormKey to preserve "unique features"
-        const existing = forms.find((f: any) => f.id === ef.id);
-        if (existing.baseFormKey === "reviewCopy") {
-          existing.baseFormKey = "financeReview";
-        }
-      }
-    });
-
-    return forms;
+    // Filter out the copy form requested to be removed
+    return forms.filter(
+      (f: any) =>
+        f.id !== "finance-stakeholder-review" && f.baseFormKey !== "reviewCopy"
+    );
   });
 
   const [isAddFormOpen, setIsAddFormOpen] = useState(false);
@@ -2540,36 +2518,85 @@ export default function App() {
 
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "success" | "error">("idle");
 
+  const buildMergedOverrides = () => {
+    const mergedOverrides = { ...UI_OVERRIDES };
+    let hasChanges = false;
+    for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key) {
+          if (key.startsWith('editable_text_')) {
+            if (key.startsWith('editable_text_style_')) {
+              const originalText = key.substring('editable_text_style_'.length);
+              try {
+                const styles = JSON.parse(localStorage.getItem(key) || '{}');
+                if (!mergedOverrides[originalText]) mergedOverrides[originalText] = {};
+                // simple diff check
+                if (JSON.stringify(mergedOverrides[originalText].styles) !== JSON.stringify(styles)) {
+                    mergedOverrides[originalText].styles = styles;
+                    hasChanges = true;
+                }
+                if (styles.display === 'none') {
+                  if (!mergedOverrides[originalText].hidden) {
+                      mergedOverrides[originalText].hidden = true;
+                      hasChanges = true;
+                  }
+                } else {
+                  if (mergedOverrides[originalText].hidden) {
+                      delete mergedOverrides[originalText].hidden;
+                      hasChanges = true;
+                  }
+                }
+              } catch (e) {}
+            } else {
+              const originalText = key.substring('editable_text_'.length);
+              const modifiedText = localStorage.getItem(key);
+              if (modifiedText && modifiedText !== originalText) {
+                if (!mergedOverrides[originalText]) mergedOverrides[originalText] = {};
+                if (mergedOverrides[originalText].text !== modifiedText) {
+                    mergedOverrides[originalText].text = modifiedText;
+                    hasChanges = true;
+                }
+              }
+            }
+          } else if (key.includes('_notes')) {
+            try {
+              const notesData = JSON.parse(localStorage.getItem(key) || '[]');
+              if (!mergedOverrides[key]) mergedOverrides[key] = {};
+              if (JSON.stringify(mergedOverrides[key].customData) !== JSON.stringify(notesData)) {
+                  mergedOverrides[key].customData = notesData;
+                  hasChanges = true; // notes changed
+              }
+            } catch (e) {}
+          }
+        }
+    }
+    return { mergedOverrides, hasChanges };
+  };
+
+  useEffect(() => {
+    if (isDeployed || !isTestMode) return;
+    
+    // Auto-save loop only when in test mode and not deployed
+    const timer = setInterval(async () => {
+      try {
+        const { mergedOverrides, hasChanges } = buildMergedOverrides();
+        if (hasChanges) {
+          await fetch('/api/save-ui-overrides', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(mergedOverrides)
+          });
+        }
+      } catch (err) {}
+    }, 2000); 
+
+    return () => clearInterval(timer);
+  }, [isDeployed, isTestMode]);
+
   const handleSaveUIOverrides = async () => {
     setSaveStatus("saving");
     try {
-      const mergedOverrides = { ...UI_OVERRIDES };
-
-      for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (key && key.startsWith('editable_text_')) {
-          if (key.startsWith('editable_text_style_')) {
-            const originalText = key.substring('editable_text_style_'.length);
-            try {
-              const styles = JSON.parse(localStorage.getItem(key) || '{}');
-              if (!mergedOverrides[originalText]) mergedOverrides[originalText] = {};
-              mergedOverrides[originalText].styles = styles;
-              if (styles.display === 'none') {
-                mergedOverrides[originalText].hidden = true;
-              } else {
-                delete mergedOverrides[originalText].hidden;
-              }
-            } catch (e) {}
-          } else {
-            const originalText = key.substring('editable_text_'.length);
-            const modifiedText = localStorage.getItem(key);
-            if (modifiedText && modifiedText !== originalText) {
-              if (!mergedOverrides[originalText]) mergedOverrides[originalText] = {};
-              mergedOverrides[originalText].text = modifiedText;
-            }
-          }
-        }
-      }
+      const { mergedOverrides } = buildMergedOverrides();
 
       const res = await fetch('/api/save-ui-overrides', {
         method: 'POST',
@@ -2921,21 +2948,7 @@ export default function App() {
                     />
                   </div>
 
-                  <div
-                    role="button"
-                    tabIndex={0}
-                    onClick={() => handleSetActiveForm("reviewCopy")}
-                    className={`px-4 py-3 text-right rounded text-sm transition-colors cursor-pointer select-none ${
-                      activeForm === "reviewCopy"
-                        ? "bg-[#fff1f1] text-[#a80000] border border-[#f4b8b8] shadow-sm font-bold"
-                        : "hover:bg-gray-200 text-gray-700 bg-transparent border border-transparent"
-                    }`}
-                  >
-                    <EditableText
-                      isTestMode={isTestMode}
-                      defaultText="بررسی ذینفع مالی پارس/هلدینگ"
-                    />
-                  </div>
+
                   <div
                     role="button"
                     tabIndex={0}
@@ -3130,9 +3143,7 @@ export default function App() {
                   <option value="holdingFinManagerReview">
                     بررسی قرارداد توسط مدیر مالی (هلدینگ)
                   </option>
-                  <option value="reviewCopy">
-                    بررسی ذینفع مالی پارس/هلدینگ
-                  </option>
+
                   <option value="legalSummary">
                     جمع بندی قرارداد در حقوقی
                   </option>
@@ -3227,9 +3238,7 @@ export default function App() {
                                 : resolvedCustomForm.baseFormKey ===
                                     "financeReview"
                                   ? "بررسی قرارداد توسط کارشناس مالی"
-                                  : resolvedCustomForm.baseFormKey ===
-                                      "reviewCopy"
-                                    ? "بررسی ذینفع مالی پارس/هلدینگ"
+
                                     : resolvedCustomForm.baseFormKey ===
                                         "finManagerReview"
                                       ? "بررسی قرارداد توسط مدیر مالی"
@@ -3464,44 +3473,7 @@ export default function App() {
                   parties={parties}
                   setParties={setParties}
                 />
-              ) : resolvedBaseKey === "reviewCopy" ? (
-                <HoldingFinancialManagerReviewForm
-                  isTestMode={isTestMode}
-                  contractType={contractType}
-                  setContractType={setContractType}
-                  isAddendum={isAddendum}
-                  setIsAddendum={setIsAddendum}
-                  hasTemplate={hasTemplate}
-                  setHasTemplate={setHasTemplate}
-                  company={company}
-                  setCompany={setCompany}
-                  subject={subject}
-                  setSubject={setSubject}
-                  representative={representative}
-                  setRepresentative={setRepresentative}
-                  noStartDate={noStartDate}
-                  setNoStartDate={setNoStartDate}
-                  noEndDate={noEndDate}
-                  setNoEndDate={setNoEndDate}
-                  startDate={startDate}
-                  setStartDate={setStartDate}
-                  endDate={endDate}
-                  setEndDate={setEndDate}
-                  hasTechnicalReport={hasTechnicalReport}
-                  setHasTechnicalReport={setHasTechnicalReport}
-                  hasPrivateConditions={hasPrivateConditions}
-                  setHasPrivateConditions={setHasPrivateConditions}
-                  requestDescription={requestDescription}
-                  setRequestDescription={setRequestDescription}
-                  privateConditionsDesc={privateConditionsDesc}
-                  setPrivateConditionsDesc={setPrivateConditionsDesc}
-                  initialAttachment={initialAttachment}
-                  setInitialAttachment={setInitialAttachment}
-                  identityAttachment={identityAttachment}
-                  setIdentityAttachment={setIdentityAttachment}
-                  parties={parties}
-                  setParties={setParties}
-                />
+
               ) : resolvedBaseKey === "legalSummary" ? (
                 <LegalSummaryForm
                   isTestMode={isTestMode}
@@ -3771,9 +3743,7 @@ export default function App() {
                       <option value="financeReview">
                         بررسی قرارداد توسط کارشناس مالی
                       </option>
-                      <option value="reviewCopy">
-                        بررسی ذینفع مالی پارس/هلدینگ
-                      </option>
+
                       <option value="finManagerReview">
                         بررسی قرارداد توسط مدیر مالی
                       </option>

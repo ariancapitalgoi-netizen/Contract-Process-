@@ -35,6 +35,7 @@ export type UIOverride = {
   text?: string;
   hidden?: boolean;
   styles?: any;
+  customData?: any;
 };
 
 export const UI_OVERRIDES: Record<string, UIOverride> = ${JSON.stringify(data, null, 2)};
@@ -44,6 +45,13 @@ export const UI_OVERRIDES: Record<string, UIOverride> = ${JSON.stringify(data, n
  */
 export function getUIOverride(defaultText: string): UIOverride | undefined {
   return UI_OVERRIDES[defaultText];
+}
+
+/**
+ * Helper to get custom notes override
+ */
+export function getNotesOverride(key: string, defaultValue: any[]): any[] {
+  return UI_OVERRIDES[key]?.customData || defaultValue;
 }
 `;
                   fs.writeFileSync(filePath, fileContent, 'utf-8');

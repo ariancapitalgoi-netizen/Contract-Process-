@@ -2,6 +2,7 @@ import React, { useState, ReactNode } from 'react';
 import { Paperclip, ChevronDown, ChevronUp } from 'lucide-react';
 import { FieldRow, FieldRowTop } from './FormComponents';
 import { BizagiDevNotes, DevNoteItem, DraggableField, EditableText } from './EditableText';
+import { getNotesOverride } from '../lib/ui-registry';
 import { Reorder } from "motion/react";
 
 export interface FinanceReviewFormProps {
@@ -177,9 +178,11 @@ export function FinanceReviewForm({
   };
 
   const [notes, setNotes] = useState<DevNoteItem[]>(() => {
-    const saved = localStorage.getItem('finance_review_notes_v2');
-    if (saved) return JSON.parse(saved);
-    return [
+    if (isTestMode) {
+      const saved = localStorage.getItem('finance_review_notes_v2');
+      if (saved) return JSON.parse(saved);
+    }
+    const defaultNotes = [
       {
         text: "تغییر گزینه‌های تصمیم در قراردادهای تهاتری: در قراردادهای تهاتری، گزینه‌های 'تصمیم اتخاذ شده' به (تایید، بررسی توسط ذینفع، رد) تغییر می‌یابد.",
         targetId: "finance-decision-row",
@@ -221,6 +224,7 @@ export function FinanceReviewForm({
         tabId: "contractInfo"
       }
     ];
+    return getNotesOverride('finance_review_notes_v2', defaultNotes);
   });
 
   React.useEffect(() => {

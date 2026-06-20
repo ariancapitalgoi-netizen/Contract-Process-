@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { EditableText, BizagiDevNotes, DevNoteItem, DraggableField } from './EditableText';
+import { getNotesOverride } from '../lib/ui-registry';
 import { Paperclip } from 'lucide-react';
 import { FieldRow, FieldRowTop } from './FormComponents';
 import { Reorder } from "motion/react";
@@ -147,9 +148,11 @@ export function SupplierReviewForm({
   const legalAttachment = localStorage.getItem('legal_attachment') === 'true';
 
   const [notes, setNotes] = useState<DevNoteItem[]>(() => {
-    const saved = localStorage.getItem('supplier_review_notes');
-    if (saved) return JSON.parse(saved);
-    return [
+    if (isTestMode) {
+      const saved = localStorage.getItem('supplier_review_notes');
+      if (saved) return JSON.parse(saved);
+    }
+    const defaultNotes = [
       {
         text: "فرم 'بررسی قرارداد توسط تامین کننده/متقاضی' طبق سفارش با ۴ تب اصلی ایجاد شده است.",
         targetId: "supplier-review-container"
@@ -167,6 +170,7 @@ export function SupplierReviewForm({
         targetId: "supplier-contract-info-tab"
       }
     ];
+    return getNotesOverride('supplier_review_notes', defaultNotes);
   });
 
   React.useEffect(() => {

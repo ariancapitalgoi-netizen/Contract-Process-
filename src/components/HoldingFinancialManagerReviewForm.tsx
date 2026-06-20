@@ -2,6 +2,7 @@ import React, { useState, ReactNode } from 'react';
 import { Paperclip, ChevronDown, ChevronUp, Info } from 'lucide-react';
 import { FieldRow, FieldRowTop } from './FormComponents';
 import { BizagiDevNotes, DevNoteItem, DraggableField, EditableText } from './EditableText';
+import { getNotesOverride } from '../lib/ui-registry';
 import { Reorder } from "motion/react";
 
 export interface HoldingFinancialManagerReviewFormProps {
@@ -174,9 +175,11 @@ export function HoldingFinancialManagerReviewForm({
   };
 
   const [notes, setNotes] = useState<DevNoteItem[]>(() => {
-    const saved = localStorage.getItem('holding_finance_review_notes');
-    if (saved) return JSON.parse(saved);
-    return [
+    if (isTestMode) {
+      const saved = localStorage.getItem('holding_finance_review_notes');
+      if (saved) return JSON.parse(saved);
+    }
+    const defaultNotes = [
       {
         text: "محدودیت تغییر نوع قرارداد: در صورتی که نوع قرارداد تهاتری باشد، فیلد غیرقابل ویرایش است. همچنین در صورت انتخاب گزینه‌های خدمات یا کالا، امکان تغییر به گزینه‌های تهاتر وجود ندارد.",
         targetId: "contract-type-info-row",
@@ -203,21 +206,12 @@ export function HoldingFinancialManagerReviewForm({
         tabId: "opinion"
       },
       {
-        text: "نمایش بنر راهنما در ضمائم نهایی تهاتر: در صورتی که فیلد ضمائم نهایی هلدینگ نمایش داده شود، بنر آبی رنگ جهت راهنمایی کاربر برای بارگذاری نسخه نهایی قرارداد ظاهر می‌شود.",
-        targetId: "holding-finance-barter-warning",
-        tabId: "opinion"
-      },
-      {
-        text: "عدم نمایش برآورد مالی در تهاتر: در صورتی که نوع قرارداد تهاتر باشد برآورد مالی نباید به کاربر نمایش داده شود",
-        targetId: "contract-type-info-row",
-        tabId: "contractInfo"
-      },
-      {
         text: "نمایش مشروط فیلدهای الحاقیه و قالب: فیلد 'الحاقیه' همیشه نمایش داده می‌شود، اما فیلد 'قالب‌دار' در قراردادهای تهاتری مخفی می‌گردد.",
         targetId: "contract-info-tab",
         tabId: "contractInfo"
       }
     ];
+    return getNotesOverride('holding_finance_review_notes', defaultNotes);
   });
 
   React.useEffect(() => {
